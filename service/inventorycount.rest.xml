@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://moqui.org/xsd/rest-api-3.xsd"
+          name="inventory-cycle-count" displayName="Directed Cycle Count REST API" version="${moqui_version}"
+          description="Directed Cycle Count">
+
+    <!-- Inventory Cycle Count API:
+        ** GET /inventory-cycle-count/cycleCounts - get all inventory cycle count import, use filters like status, facility, createdDate
+     -->
+    <resource name="cycleCounts">
+        <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportView" operation="list"/></method>
+    </resource>
+</resource>
