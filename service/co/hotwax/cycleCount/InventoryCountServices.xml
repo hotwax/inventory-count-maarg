@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+
+    <service verb="create" noun="InvCountImportStatus" type="entity-auto">
+        <description>Service to create an Inventory Count Import Status history.</description>
+        <in-parameters><auto-parameters entity-name="co.hotwax.warehouse.InvCountImportStatus" include="all"/></in-parameters>
+    </service>
+
+    <service verb="create" noun="InventoryCountImport">
+        <description>Service to create an Inventory Count Import and status history.</description>
+        <in-parameters>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImport" include="nonpk">
+                <exclude field-name="uploadedByUserLogin"/>
+                <exclude field-name="createdDate"/>
+                <exclude field-name="lastUpdatedStamp"/>
+            </auto-parameters>
+        </in-parameters>
+        <out-parameters>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportView" include="all"/>
+        </out-parameters>
+        <actions>
+            <entity-make-value entity-name="co.hotwax.warehouse.InventoryCountImport" value-field="countImport" map="context"/>
+            <entity-sequenced-id-primary value-field="countImport"/>
+            <set field="countImport.uploadedByUserLogin" from="ec.user.userId"/>
+            <entity-create value-field="countImport"/>
+
+            <if condition="context.statusId">
+                <set field="nowDate" from="ec.user.nowTimestamp"/>
+                <service-call name="create#InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:countImport.inventoryCountImportId, statusDate:nowDate, changeByUserLoginId:countImport.uploadedByUserLogin]"/>
+            </if>
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="countImportView"/>
+            <script>context.putAll(countImportView.getMap())</script>
+        </actions>
+    </service>
+</services>
