@@ -5,8 +5,10 @@
 
     <!-- Inventory Cycle Count API:
         ** GET /inventory-cycle-count/cycleCounts - get all inventory cycle count import, use filters like status, facility, createdDate
+        ** POST /inventory-cycle-count/cycleCounts - create new inventory cycle count import
      -->
     <resource name="cycleCounts">
         <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportView" operation="list"/></method>
+        <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImport"/></method>
     </resource>
 </resource>
