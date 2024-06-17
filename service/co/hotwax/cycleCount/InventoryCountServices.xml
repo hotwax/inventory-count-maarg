@@ -6,6 +6,25 @@
         <in-parameters><auto-parameters entity-name="co.hotwax.warehouse.InvCountImportStatus" include="all"/></in-parameters>
     </service>
 
+    <service verb="check" noun="StatusValidChange">
+        <description>Service to check if an Inventory Count Import Status change is valid.</description>
+        <in-parameters>
+            <parameter name="statusId" required="true"/>
+            <parameter name="statusIdTo" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="isValidChange" required="true"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="org.apache.ofbiz.common.status.StatusValidChange" value-field="checkStatus">
+                <field-map field-name="statusId" from="statusId"/>
+                <field-map field-name="statusIdTo" from="statusIdTo"/>
+            </entity-find-one>
+            <!-- Its a valid status change -->
+            <set field="isValidChange" from="checkStatus != null"/>
+        </actions>
+    </service>
+
     <service verb="create" noun="InventoryCountImport">
         <description>Service to create an Inventory Count Import and status history.</description>
         <in-parameters>
