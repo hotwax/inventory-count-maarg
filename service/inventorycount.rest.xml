@@ -12,9 +12,11 @@
         <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImport"/></method>
         <!-- Inventory Cycle Count API:
             ** GET /inventory-cycle-count/cycleCounts/{inventoryCountImportId} - get inventory cycle count import
+            ** PUT /inventory-cycle-count/cycleCounts/{inventoryCountImportId} - update inventory cycle count import
          -->
         <id name="inventoryCountImportId">
             <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportView" operation="one"/></method>
+            <method type="put"><service name="co.hotwax.cycleCount.InventoryCountServices.update#InventoryCountImport"/></method>
         </id>
     </resource>
 </resource>
