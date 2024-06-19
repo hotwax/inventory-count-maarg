@@ -19,15 +19,11 @@
             <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportView" include="all"/>
         </out-parameters>
         <actions>
-            <entity-make-value entity-name="co.hotwax.warehouse.InventoryCountImport" value-field="countImport" map="context"/>
-            <entity-sequenced-id-primary value-field="countImport"/>
-            <set field="countImport.uploadedByUserLogin" from="ec.user.userId"/>
-            <entity-create value-field="countImport"/>
+            <set field="context.uploadedByUserLogin" from="ec.user.userId"/>
+            <service-call name="create#co.hotwax.warehouse.InventoryCountImport" in-map="context" out-map="context"/>
 
-            <if condition="context.statusId">
-                <set field="nowDate" from="ec.user.nowTimestamp"/>
-                <service-call name="create#InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:countImport.inventoryCountImportId, statusDate:nowDate, changeByUserLoginId:countImport.uploadedByUserLogin]"/>
-            </if>
+            <if condition="context.statusId"><service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:context.inventoryCountImportId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:context.uploadedByUserLogin]"/></if>
+
             <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="countImportView"/>
             <script>context.putAll(countImportView.getMap())</script>
         </actions>
