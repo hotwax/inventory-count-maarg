@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
 
+    <service verb="check" noun="StatusValidChange">
+        <description>Service to check if an Inventory Count Import Status change is valid.</description>
+        <in-parameters>
+            <parameter name="statusId" required="true"/>
+            <parameter name="statusIdTo" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="isValidChange" required="true"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="org.apache.ofbiz.common.status.StatusValidChange" value-field="checkStatus">
+                <field-map field-name="statusId" from="statusId"/>
+                <field-map field-name="statusIdTo" from="statusIdTo"/>
+            </entity-find-one>
+            <!-- Its a valid status change -->
+            <set field="isValidChange" from="checkStatus != null"/>
+        </actions>
+    </service>
+
     <service verb="create" noun="InventoryCountImport">
         <description>Service to create an Inventory Count Import and status history.</description>
         <in-parameters>
@@ -18,6 +37,36 @@
             <service-call name="create#co.hotwax.warehouse.InventoryCountImport" in-map="context" out-map="context"/>
 
             <if condition="context.statusId"><service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:context.inventoryCountImportId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:context.uploadedByUserLogin]"/></if>
+
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="countImportView"/>
+            <script>context.putAll(countImportView.getMap())</script>
+        </actions>
+    </service>
+    <service verb="update" noun="InventoryCountImport">
+        <description>Service to update an Inventory Count Import.</description>
+        <in-parameters>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImport" include="pk" required="true"/>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImport" include="nonpk">
+                <exclude field-name="uploadedByUserLogin"/>
+            </auto-parameters>
+        </in-parameters>
+        <out-parameters>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportView" include="all"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImport" value-field="invCountImp"/>
+            <set field="oldStatusId" from="invCountImp.statusId"/>
+            <entity-set value-field="invCountImp" include="nonpk" map="context"/>
+            <entity-update value-field="invCountImp"/>
+
+            <if condition="oldStatusId != context.statusId">
+                <service-call name="check#StatusValidChange" in-map="[statusId:oldStatusId, statusIdTo:context.statusId]" out-map="checkStatus"/>
+                <if condition="!checkStatus">
+                    <return error="true" message="Invalid status change."/>
+                </if>
+                <!-- If its a valid status change -->
+                <service-call name="create#InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:context.inventoryCountImportId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:ec.user.userId]"/>
+            </if>
 
             <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="countImportView"/>
             <script>context.putAll(countImportView.getMap())</script>
