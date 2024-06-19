@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+
+    <service verb="create" noun="InventoryCountImport">
+        <description>Service to create an Inventory Count Import and status history.</description>
+        <in-parameters>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImport" include="nonpk">
+                <exclude field-name="uploadedByUserLogin"/>
+                <exclude field-name="createdDate"/>
+                <exclude field-name="lastUpdatedStamp"/>
+            </auto-parameters>
+        </in-parameters>
+        <out-parameters>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportView" include="all"/>
+        </out-parameters>
+        <actions>
+            <set field="context.uploadedByUserLogin" from="ec.user.userId"/>
+            <service-call name="create#co.hotwax.warehouse.InventoryCountImport" in-map="context" out-map="context"/>
+
+            <if condition="context.statusId"><service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:context.inventoryCountImportId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:context.uploadedByUserLogin]"/></if>
+
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="countImportView"/>
+            <script>context.putAll(countImportView.getMap())</script>
+        </actions>
+    </service>
+</services>
