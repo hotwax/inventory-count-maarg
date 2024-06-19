@@ -17,6 +17,43 @@
         <id name="inventoryCountImportId">
             <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportView" operation="one"/></method>
             <method type="put"><service name="co.hotwax.cycleCount.InventoryCountServices.update#InventoryCountImport"/></method>
+            <!-- Inventory Cycle Count API:
+                ** GET /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items - get inventory cycle count items
+            -->
+            <resource name="items">
+                <method type="get"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImportItemDetails"/></method>
+                <!-- Inventory Cycle Count API:
+                    ** PUT /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items/{importItemSeqId} - update inventory cycle count item
+                    ** DELETE /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items/{importItemSeqId} - delete inventory cycle count item
+                -->
+                <id name="importItemSeqId">
+                    <method type="put"><service name="co.hotwax.cycleCount.InventoryCountServices.update#InventoryCountImportItem"/></method>
+                    <method type="delete"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="delete"/></method>
+                </id>
+                <!-- Inventory Cycle Count API:
+                    ** POST /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items - create new inventory cycle count item
+                    ** POST /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items/{importItemSeqId} - update inventory cycle count item
+                    ** GET /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items/count - get inventory cycle count item count
+                -->
+                <resource name="add">
+                    <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.add#InventoryCountImportItems"/></method>
+                </resource>
+                <resource name="update">
+                    <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.update#InventoryCountImportItems"/></method>
+                </resource>
+                <resource name="recount">
+                    <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.recount#InventoryCountImportItems"/></method>
+                </resource>
+                <resource name="count">
+                    <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="count"/></method>
+                </resource>
+            </resource>
         </id>
+        <!-- Inventory Cycle Count API:
+            ** GET /inventory-cycle-count/cycleCounts/count - get inventory cycle count import count
+         -->
+        <resource name="count">
+            <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImport" operation="count"/></method>
+        </resource>
     </resource>
 </resource>

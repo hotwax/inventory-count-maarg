@@ -72,4 +72,142 @@
             <script>context.putAll(countImportView.getMap())</script>
         </actions>
     </service>
+
+    <service verb="get" noun="InventoryCountImportItemDetails">
+        <description> Service to get Inventory Count Import Item details.</description>
+        <in-parameters><parameter name="inventoryCountImportId" required="true"/></in-parameters>
+        <out-parameters><parameter name="itemDetails" type="List"/></out-parameters>
+        <actions>
+            <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItemView" list="invCountImpItemItr">
+                <econdition field-name="inventoryCountImportId"/>
+                <use-iterator/>
+            </entity-find>
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImport" value-field="invCountImp">
+                <field-map field-name="inventoryCountImportId" from="inventoryCountImportId"/>
+            </entity-find-one>
+            <set field="itemDetails" from="[]"/>
+            <iterate list="invCountImpItemItr" entry="invCountImpItem">
+                <set field="itemDetail" from="invCountImpItem?.getMap()"/>
+                <entity-find-one entity-name="org.apache.ofbiz.product.inventory.InventoryItem" value-field="inventoryItem">
+                    <field-map field-name="productId" from="invCountImpItem.productId"/>
+                    <field-map field-name="facilityId" from="invCountImp.facilityId"/>
+                </entity-find-one>
+                <set field="itemDetail.qoh" from="inventoryItem?.quantityOnHandTotal" default-value="0"/>
+
+                <!--Last count sync date-->
+                <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItemView" list="lastCountedItems">
+                    <econdition field-name="productId" from="invCountImpItem.productId"/>
+                    <econdition field-name="facilityId" from="invCountImp.facilityId"/>
+                    <econdition field-name="statusId" value="INV_COUNT_COMPLETED"/>
+                    <econdition field-name="inventoryCountImportId" operator="not-equals" from="inventoryCountImportId"/>
+                    <order-by field-name="-createdDate"/>
+                </entity-find>
+                <if condition="lastCountedItems &amp;&amp; lastCountedItems.size() > 0">
+                    <set field="itemDetail.lastCountedDate" from="lastCountedItems?.get(0).get('createdDate')"/>
+                </if>
+                <script>itemDetails.add(itemDetail)</script>
+            </iterate>
+        </actions>
+    </service>
+
+    <service verb="create" noun="InventoryCountImportItem" type="entity-auto">
+        <description>Service to create Inventory Count Import Item.</description>
+        <in-parameters>
+            <parameter name="inventoryCountImportId" required="true"/>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportItem" include="nonpk"/>
+        </in-parameters>
+    </service>
+
+    <service verb="update" noun="InventoryCountImportItem">
+        <description>Service to update Inventory Count Import Item.</description>
+        <in-parameters>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportItem" include="pk" required="true"/>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportItem" include="nonpk"/>
+        </in-parameters>
+        <actions>
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportItem" value-field="invCountImpItem">
+                <field-map field-name="inventoryCountImportId" from="context.inventoryCountImportId"/>
+                <field-map field-name="importItemSeqId" from="context.importItemSeqId"/>
+            </entity-find-one>
+            <if condition="!invCountImpItem"><return error="true" message="Item not Found"/></if>
+
+            <!-- check for status change if yes then check for status valid change if yes then return error-->
+            <if condition="invCountImpItem.statusId != context.statusId">
+                <entity-find-one entity-name="org.apache.ofbiz.common.status.StatusValidChange" value-field="checkStatus">
+                    <field-map field-name="statusId" value="invCountImpItem.statusId"/>
+                    <field-map field-name="statusIdTo" value="context.statusId"/>
+                </entity-find-one>
+                <if condition="!checkStatus">
+                    <return error="true" message="Invalid Status Change"/>
+                </if>
+            </if>
+
+            <script>invCountImpItem.putAll(context)</script>
+            <entity-update value-field="invCountImpItem"/>
+        </actions>
+    </service>
+
+    <service verb="add" noun="InventoryCountImportItems">
+        <in-parameters>
+            <parameter name="inventoryCountImportId" required="true"/>
+            <parameter name="itemList" type="List"/>
+        </in-parameters>
+        <actions>
+            <if condition="itemList == null || itemList.size() == 0"><return message="No Items Found"/></if>
+            <iterate list="itemList" entry="item">
+                <if condition="item.idType != null">
+                    <entity-find entity-name="org.apache.ofbiz.product.product.GoodIdentification" list="goodIdentifications">
+                        <econdition field-name="goodIdentificationTypeId" from="item.idType"/>
+                        <econdition field-name="idValue" from="item.idValue"/>
+                        <date-filter/>
+                        <order-by field-name="fromDate"/>
+                    </entity-find>
+                    <if condition="goodIdentifications != null"><set field="item.idValue" from="goodIdentifications[0].productId"/></if>
+                </if>
+
+                <if condition="item.idValue">
+                    <set field="tempItemMap" from="item"/>
+                    <set field="tempItemMap.inventoryCountImportId" from="inventoryCountImportId"/>
+                    <set field="tempItemMap.productId" from="item.idValue"/>
+
+                    <script>println("===item====" + item)</script>
+                    <script>println("===tempItemMap====" + tempItemMap)</script>
+                    <!-- Not checking if idValue is already added. One can just reject duplicate records if added multiple times. -->
+                    <service-call name="create#InventoryCountImportItem" in-map="tempItemMap"/>
+                </if>
+            </iterate>
+        </actions>
+    </service>
+
+    <service verb="update" noun="InventoryCountImportItems">
+        <description>Service to update Inventory Count Import Item.</description>
+        <in-parameters>
+            <parameter name="inventoryCountImportId" required="true"/>
+            <parameter name="importItems" type="List" required="true"/>
+        </in-parameters>
+        <actions>
+            <if condition="importItems &amp;&amp; importItems.size() > 0">
+                <iterate list="importItems" entry="importItem">
+                    <set field="importItem.inventoryCountImportId" from="inventoryCountImportId"/>
+                    <service-call name="update#InventoryCountImportItem" in-map="importItem"/>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+
+    <service verb="recount" noun="InventoryCountImportItems">
+        <description>Service to recount Inventory Count Import Items.</description>
+        <in-parameters>
+            <parameter name="inventoryCountImportId" required="true"/>
+            <parameter name="importItemSeqIds" type="List" required="true"/>
+        </in-parameters>
+        <actions>
+            <if condition="importItemSeqIds &amp;&amp; importItemSeqIds.size() > 0">
+                <iterate list="importItemSeqIds" entry="importItemSeqId">
+                    <service-call name="update#InventoryCountImportItem" in-map="[inventoryCountImportId: inventoryCountImportId, importItemSeqId: importItemSeqId, statusId: 'INV_COUNT_REJECTED']"/>
+                    <service-call name="create#InventoryCountImportItem" in-map="[inventoryCountImportId: inventoryCountImportId, importItemSeqId: importItemSeqId, statusId: 'INV_COUNT_CREATED']"/>
+                </iterate>
+            </if>
+        </actions>
+    </service>
 </services>
