@@ -38,7 +38,7 @@ under the License.
         <member-entity entity-alias="ICII" entity-name="co.hotwax.warehouse.InventoryCountImportItem" join-from-alias="ICI">
             <key-map field-name="inventoryCountImportId"/>
         </member-entity>
-        <member-entity entity-alias="ICIV" entity-name="co.hotwax.warehouse.InvCountImportVariance" join-from-alias="ICII" join-optional="false">
+        <member-entity entity-alias="ICIV" entity-name="co.hotwax.warehouse.InvCountImportVariance" join-from-alias="ICII" join-optional="true">
             <key-map field-name="inventoryCountImportId"/>
             <key-map field-name="importItemSeqId" related="invCountImportItemSeqId"/>
         </member-entity>
