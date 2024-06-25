@@ -35,8 +35,7 @@
 
             <if condition="context.statusId"><service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:context.inventoryCountImportId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:context.uploadedByUserLogin]"/></if>
 
-            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="countImportView"/>
-            <script>context.putAll(countImportView.getMap())</script>
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="context"/>
         </actions>
     </service>
     <service verb="update" noun="InventoryCountImport">
