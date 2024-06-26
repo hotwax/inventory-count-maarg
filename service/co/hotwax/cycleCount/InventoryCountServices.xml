@@ -82,13 +82,22 @@
             <iterate list="invCountImpItemItr" entry="invCountImpItem">
                 <set field="itemDetail" from="invCountImpItem?.getMap()"/>
                 <set field="qtyOnHand" from="0.0"/>
-                <entity-find entity-name="org.apache.ofbiz.product.inventory.InventoryItem" list="inventoryItems">
-                    <econdition field-name="productId" from="invCountImpItem.productId"/>
-                    <econdition field-name="facilityId" from="invCountImpItem.facilityId"/>
-                </entity-find>
-                <iterate list="inventoryItems" entry="inventoryItem">
-                    <set field="qtyOnHand" from="qtyOnHand + (inventoryItem.quantityOnHandTotal ?:0)" type="BigDecimal"/>
-                </iterate>
+                <entity-find-one entity-name="co.hotwax.warehouse.InvCountImportVariance" value-field="countImportVariance">
+                    <field-map field-name="inventoryCountImportId"/>
+                    <field-map field-name="invCountImportItemSeqId" from="invCountImpItem.importItemSeqId"/>
+                </entity-find-one>
+                <if condition="countImportVariance">
+                    <set field="qtyOnHand" from="countImportVariance.systemQuantityOnHand" default-value="0"/>
+                    <else>
+                        <entity-find entity-name="org.apache.ofbiz.product.inventory.InventoryItem" list="inventoryItems">
+                            <econdition field-name="productId" from="invCountImpItem.productId"/>
+                            <econdition field-name="facilityId" from="invCountImpItem.facilityId"/>
+                        </entity-find>
+                        <iterate list="inventoryItems" entry="inventoryItem">
+                            <set field="qtyOnHand" from="qtyOnHand + (inventoryItem.quantityOnHandTotal ?:0)" type="BigDecimal"/>
+                        </iterate>
+                    </else>
+                </if>
                 <set field="itemDetail.qoh" from="qtyOnHand" default-value="0"/>
 
                 <!--Last count sync date-->
@@ -194,6 +203,44 @@
                     </if>
                 </iterate>
             </if>
+        </actions>
+    </service>
+
+    <service verb="get" noun="InventoryCountImportDetails">
+        <in-parameters>
+            <parameter name="inventoryCountImportIds" type="List" required="true"/>
+        </in-parameters>
+        <out-parameters><parameter name="importStats" type="List"/></out-parameters>
+        <actions>
+            <set field="importStats" from="[]"/>
+            <iterate list="inventoryCountImportIds" entry="countImportId">
+                <service-call name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImport" in-map="[inventoryCountImportId:countImportId]" out-map="countImport"/>
+                <set field="nothing" from="importStats.add(new HashMap(countImport))"/>
+            </iterate>
+        </actions>
+    </service>
+    <service verb="get" noun="InventoryCountImport">
+        <in-parameters><parameter name="inventoryCountImportId" required="true"/></in-parameters>
+        <out-parameters>
+            <auto-parameters entity-name="InventoryCountImportView"/>
+            <parameter name="totalItems"/>
+            <parameter name="itemCounted"/>
+            <parameter name="rejectedCount"/>
+            <parameter name="totalVaraince"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="InventoryCountImportView" value-field="context"/>
+            <entity-find entity-name="InventoryCountImportItem" list="itemList">
+                <econdition field-name="inventoryCountImportId"/>
+            </entity-find>
+            <set field="context.totalItems" from="(itemList?.size() ?:0)"/>
+            <set field="context.itemCounted" from="(itemList?.findAll{it.quantity > 0}?.size() ?:0)"/>
+            <set field="context.rejectedCount" from="(itemList?.findAll{it.statusId == 'INV_COUNT_REJECTED'}?.size() ?:0)"/>
+
+            <entity-find entity-name="co.hotwax.warehouse.InvCountImportVariance" list="varianceList">
+                <econdition field-name="inventoryCountImportId"/>
+            </entity-find>
+            <set field="context.totalVaraince" from="(varianceList?.stream()?.map(it -> it.varianceQuantityOnHand)?.reduce(BigDecimal.ZERO, BigDecimal::add) ?:0)"/>
         </actions>
     </service>
 </services>

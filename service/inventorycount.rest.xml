@@ -51,12 +51,19 @@
                     <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="count"/></method>
                 </resource>
             </resource>
+
+            <resource name="stats">
+                <method type="get"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImport"/></method>
+            </resource>
         </id>
         <!-- Inventory Cycle Count API:
             ** GET /inventory-cycle-count/cycleCounts/count - get inventory cycle count import count
          -->
         <resource name="count">
             <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImport" operation="count"/></method>
+        </resource>
+        <resource name="stats">
+            <method type="get"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImportDetails"/></method>
         </resource>
     </resource>
 </resource>
