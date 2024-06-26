@@ -3,6 +3,9 @@
           name="inventory-cycle-count" displayName="Directed Cycle Count REST API" version="${moqui_version}"
           description="Directed Cycle Count">
 
+    <resource name="login" require-authentication="anonymous-all">
+        <method type="post"><service name="co.hotwax.common.UserServices.login#User"/></method>
+    </resource>
     <!-- Inventory Cycle Count API:
         ** GET /inventory-cycle-count/cycleCounts - get all inventory cycle count import, use filters like status, facility, createdDate
         ** POST /inventory-cycle-count/cycleCounts - create new inventory cycle count import

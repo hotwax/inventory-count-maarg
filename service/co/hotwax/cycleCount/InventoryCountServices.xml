@@ -56,7 +56,7 @@
                 <service-call name="update#co.hotwax.warehouse.InventoryCountImport" in-map="context"/>
 
                 <if condition="context.statusId &amp;&amp; oldStatusId != context.statusId">
-                    <service-call name="check#StatusValidChange" in-map="[statusId:oldStatusId, statusIdTo:context.statusId]" out-map="checkStatus"/>
+                    <service-call name="co.hotwax.cycleCount.InventoryCountServices.check#StatusValidChange" in-map="[statusId:oldStatusId, statusIdTo:context.statusId]" out-map="checkStatus"/>
                     <if condition="!checkStatus">
                         <return error="true" message="Invalid status change."/>
                     </if>
@@ -65,13 +65,12 @@
                 </if>
             </if>
 
-            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="countImportView"/>
-            <script>context.putAll(countImportView.getMap())</script>
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="context"/>
         </actions>
     </service>
 
     <service verb="get" noun="InventoryCountImportItemDetails">
-        <description> Service to get Inventory Count Import Item details.</description>
+        <description>Service to get Inventory Count Import Item details.</description>
         <in-parameters><parameter name="inventoryCountImportId" required="true"/></in-parameters>
         <out-parameters><parameter name="itemList" type="List"/></out-parameters>
         <actions>
@@ -82,11 +81,15 @@
             <set field="itemList" from="[]"/>
             <iterate list="invCountImpItemItr" entry="invCountImpItem">
                 <set field="itemDetail" from="invCountImpItem?.getMap()"/>
-                <entity-find-one entity-name="org.apache.ofbiz.product.inventory.InventoryItem" value-field="inventoryItem">
-                    <field-map field-name="productId" from="invCountImpItem.productId"/>
-                    <field-map field-name="facilityId" from="invCountImpItem.facilityId"/>
-                </entity-find-one>
-                <set field="itemDetail.qoh" from="inventoryItem?.quantityOnHandTotal" default-value="0"/>
+                <set field="qtyOnHand" from="0.0"/>
+                <entity-find entity-name="org.apache.ofbiz.product.inventory.InventoryItem" list="inventoryItems">
+                    <econdition field-name="productId" from="invCountImpItem.productId"/>
+                    <econdition field-name="facilityId" from="invCountImpItem.facilityId"/>
+                </entity-find>
+                <iterate list="inventoryItems" entry="inventoryItem">
+                    <set field="qtyOnHand" from="qtyOnHand + (inventoryItem.quantityOnHandTotal ?:0)" type="BigDecimal"/>
+                </iterate>
+                <set field="itemDetail.qoh" from="qtyOnHand" default-value="0"/>
 
                 <!--Last count sync date-->
                 <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItemView" list="lastCountedItems">
@@ -149,6 +152,7 @@
                     <service-call name="create#co.hotwax.warehouse.InventoryCountImportItem" in-map="item"/>
                 </if>
             </iterate>
+            <return message="Inventory Count Import Items added successfully."/>
         </actions>
     </service>
 
@@ -159,12 +163,12 @@
             <parameter name="itemList" type="List" required="true"/>
         </in-parameters>
         <actions>
-            <if condition="itemList &amp;&amp; itemList.size() > 0">
-                <iterate list="itemList" entry="importItem">
-                    <set field="importItem.inventoryCountImportId" from="inventoryCountImportId"/>
-                    <service-call name="update#InventoryCountImportItem" in-map="importItem"/>
-                </iterate>
-            </if>
+            <if condition="itemList == null || itemList.size() == 0"><return message="No Items Found"/></if>
+            <iterate list="itemList" entry="importItem">
+                <set field="importItem.inventoryCountImportId" from="inventoryCountImportId"/>
+                <service-call name="update#InventoryCountImportItem" in-map="importItem"/>
+            </iterate>
+            <return message="Inventory Count Import Items added successfully."/>
         </actions>
     </service>
 
