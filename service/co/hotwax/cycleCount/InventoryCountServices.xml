@@ -243,4 +243,67 @@
             <set field="context.totalVaraince" from="(varianceList?.stream()?.map(it -> it.varianceQuantityOnHand)?.reduce(BigDecimal.ZERO, BigDecimal::add) ?:0)"/>
         </actions>
     </service>
+
+    <service verb="approve" noun="InventoryCountImportItem">
+        <in-parameters>
+            <parameter name="inventoryCountImportId" required="true"/>
+            <parameter name="importItemSeqId" required="true"/>
+            <parameter name="quantity"/>
+            <parameter name="systemQOH"/>
+            <parameter name="varianceQty"/>
+            <parameter name="reason"/>
+            <parameter name="comments"/>
+        </in-parameters>
+        <actions>
+            <entity-find-one entity-name="InventoryCountImportItemView" value-field="invCountImpItem"/>
+
+            <set field="userName" from="ec.user.username" default-value="${System.getProperty('default.oms.user')}"/>
+            <script>
+                omsBaseUrl = co.hotwax.util.MaargUtil.getOmsInstanceUrl(ec.ecfi);
+                token = co.hotwax.util.MaargUtil.getOmsJwtToken(ec.ecfi, userName);
+            </script>
+            <if condition="!token">
+                <return error="true" message="Unable to generate oms token, check JWT configuration"/>
+            </if>
+            <if condition="!omsBaseUrl">
+                <return error="true" message="OMS base url not found"/>
+            </if>
+
+            <!-- First record the record cycle count. -->
+            <set field="inMap.token" from="token"/>
+            <set field="inMap.omsBaseUrl" from="omsBaseUrl"/>
+            <set field="inMap.productId" from="invCountImpItem.productId"/>
+            <set field="inMap.facilityId" from="invCountImpItem.facilityId"/>
+            <set field="inMap.quantity" from="context.quantity"/>
+            <set field="inMap.reason" from="context.reason"/>
+            <set field="inMap.comments" from="context.comments"/>
+            <service-call name="co.hotwax.order.routing.InventoryReservationServices.run#RecordCycleCount"
+                          in-map="inMap" transaction="force-new" out-map="result"/>
+
+            <!-- Create Inventory import variance record to track history -->
+            <set field="inMap.inventoryCountImportId" from="invCountImpItem.inventoryCountImportId"/>
+            <set field="inMap.invCountImportItemSeqId" from="invCountImpItem.importItemSeqId"/>
+            <set field="inMap.locationSeqId" from="invCountImpItem.locationSeqId"/>
+            <set field="inMap.systemQuantityOnHand" from="systemQOH"/>
+            <set field="inMap.actualQuantityOnHand" from="quantity"/>
+            <set field="inMap.varianceQuantityOnHand" from="varianceQty"/>
+            <service-call name="create#co.hotwax.warehouse.InvCountImportVariance" in-map="inMap"/>
+
+            <!-- Marking Item as accepted/completed. -->
+            <service-call name="update#InventoryCountImportItem" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:context.importItemSeqId, statusId:'INV_COUNT_COMPLETED']"/>
+
+            <return type="info" message="Inventory Count Import Item Approved."/>
+        </actions>
+    </service>
+    <service verb="run" noun="RecordCycleCount" type="remote-rest" location="${omsBaseUrl}/api/service/recordInventoryCount?token=${token}" method="post">
+        <in-parameters>
+            <parameter name="token"/>
+            <parameter name="omsBaseUrl"/>
+            <parameter name="productId"/>
+            <parameter name="facilityId"/>
+            <parameter name="quantity"/>
+            <parameter name="reason"/>
+            <parameter name="comments"/>
+        </in-parameters>
+    </service>
 </services>

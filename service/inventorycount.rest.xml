@@ -32,6 +32,12 @@
                 <id name="importItemSeqId">
                     <method type="put"><service name="co.hotwax.cycleCount.InventoryCountServices.update#InventoryCountImportItem"/></method>
                     <method type="delete"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="delete"/></method>
+
+                    <resource name="approve">
+                        <method type="post">
+                            <service name="co.hotwax.cycleCount.InventoryCountServices.approve#InventoryCountImportItem"/>
+                        </method>
+                    </resource>
                 </id>
                 <!-- Inventory Cycle Count API:
                     ** POST /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items - create new inventory cycle count item
