@@ -31,7 +31,7 @@
         </out-parameters>
         <actions>
             <set field="context.uploadedByUserLogin" from="ec.user.getUsername()"/>
-            <service-call name="create#co.hotwax.warehouse.InventoryCountImport" in-map="context" out-map="context"/>
+            <service-call name="create#co.hotwax.warehouse.InventoryCountImport" in-map="context + [createdDate: ec.user.nowTimestamp]" out-map="context"/>
 
             <if condition="context.statusId"><service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:context.inventoryCountImportId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:context.uploadedByUserLogin]"/></if>
 
