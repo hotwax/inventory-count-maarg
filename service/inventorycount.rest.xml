@@ -87,7 +87,7 @@
             <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImport" operation="count"/></method>
         </resource>
         <resource name="stats">
-            <method type="get"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImportDetails"/></method>
+            <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImportDetails"/></method>
         </resource>
     </resource>
 </resource>

@@ -215,7 +215,10 @@
             <set field="importStats" from="[]"/>
             <iterate list="inventoryCountImportIds" entry="countImportId">
                 <service-call name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImport" in-map="[inventoryCountImportId:countImportId]" out-map="countImport"/>
-                <set field="nothing" from="importStats.add(new HashMap(countImport))"/>
+                <script>
+                    importStats.add(new HashMap(countImport));
+                    countImport.clear();
+                </script>
             </iterate>
         </actions>
     </service>
@@ -226,10 +229,14 @@
             <parameter name="totalItems"/>
             <parameter name="itemCounted"/>
             <parameter name="rejectedCount"/>
-            <parameter name="totalVaraince"/>
+            <parameter name="totalVariance"/>
+            <parameter name="statusHistory"/>
         </out-parameters>
         <actions>
-            <entity-find-one entity-name="InventoryCountImportView" value-field="context"/>
+            <entity-find-one entity-name="InventoryCountImportView" value-field="countImport"/>
+            <if condition="!countImport"><return/></if>
+
+            <script>context.putAll(countImport)</script>
             <entity-find entity-name="InventoryCountImportItem" list="itemList">
                 <econdition field-name="inventoryCountImportId"/>
             </entity-find>
@@ -240,7 +247,11 @@
             <entity-find entity-name="co.hotwax.warehouse.InvCountImportVariance" list="varianceList">
                 <econdition field-name="inventoryCountImportId"/>
             </entity-find>
-            <set field="context.totalVaraince" from="(varianceList?.stream()?.map(it -> it.varianceQuantityOnHand)?.reduce(BigDecimal.ZERO, BigDecimal::add) ?:0)"/>
+            <set field="context.totalVariance" from="(varianceList?.stream()?.map(it -> it.varianceQuantityOnHand)?.reduce(BigDecimal.ZERO, BigDecimal::add) ?:0)"/>
+            
+            <entity-find entity-name="InvCountImportStatus" list="statusHistory">
+                <econdition field-name="inventoryCountImportId"/>
+            </entity-find>
         </actions>
     </service>
 
@@ -270,6 +281,7 @@
             </if>
 
             <!-- First record the record cycle count. -->
+            <set field="inMap" from="[:]"/>
             <set field="inMap.token" from="token"/>
             <set field="inMap.omsBaseUrl" from="omsBaseUrl"/>
             <set field="inMap.productId" from="invCountImpItem.productId"/>
@@ -277,8 +289,8 @@
             <set field="inMap.quantity" from="context.quantity"/>
             <set field="inMap.reason" from="context.reason"/>
             <set field="inMap.comments" from="context.comments"/>
-            <service-call name="co.hotwax.order.routing.InventoryReservationServices.run#RecordCycleCount"
-                          in-map="inMap" transaction="force-new" out-map="result"/>
+            <service-call name="co.hotwax.cycleCount.InventoryCountServices.run#RecordCycleCount"
+                          in-map="inMap" out-map="result"/>
 
             <!-- Create Inventory import variance record to track history -->
             <set field="inMap.inventoryCountImportId" from="invCountImpItem.inventoryCountImportId"/>
@@ -297,8 +309,6 @@
     </service>
     <service verb="run" noun="RecordCycleCount" type="remote-rest" location="${omsBaseUrl}/api/service/recordInventoryCount?token=${token}" method="post">
         <in-parameters>
-            <parameter name="token"/>
-            <parameter name="omsBaseUrl"/>
             <parameter name="productId"/>
             <parameter name="facilityId"/>
             <parameter name="quantity"/>
