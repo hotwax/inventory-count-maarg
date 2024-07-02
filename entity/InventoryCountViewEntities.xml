@@ -42,6 +42,12 @@ under the License.
             <key-map field-name="inventoryCountImportId"/>
             <key-map field-name="importItemSeqId" related="invCountImportItemSeqId"/>
         </member-entity>
+        <member-entity entity-alias="PER" entity-name="org.apache.ofbiz.party.party.Person" join-from-alias="ICII" join-optional="true">
+            <key-map field-name="performedByPartyId" related="partyId"/>
+        </member-entity>
+        <member-entity entity-alias="PG" entity-name="org.apache.ofbiz.party.party.PartyGroup" join-from-alias="ICII" join-optional="true">
+            <key-map field-name="performedByPartyId" related="partyId"/>
+        </member-entity>
         <alias-all entity-alias="ICI"/>
         <alias-all entity-alias="ICII">
             <exclude field="inventoryCountImportId"/>
@@ -51,5 +57,8 @@ under the License.
             <exclude field="invCountImportItemSeqId"/>
         </alias-all>
         <alias name="itemStatusId" field="statusId" entity-alias="ICII"/>
+        <alias name="performedByFirstName" field="firstName" entity-alias="PER"/>
+        <alias name="performedByLastName" field="lastName" entity-alias="PER"/>
+        <alias name="performedByGroupName" field="groupName" entity-alias="PG"/>
     </view-entity>
 </entities>
