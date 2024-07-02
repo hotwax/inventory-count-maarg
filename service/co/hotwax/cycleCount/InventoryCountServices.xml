@@ -241,13 +241,13 @@
                 <econdition field-name="inventoryCountImportId"/>
             </entity-find>
             <set field="context.totalItems" from="(itemList?.size() ?:0)"/>
-            <set field="context.itemCounted" from="(itemList?.findAll{it.quantity > 0}?.size() ?:0)"/>
+            <set field="context.itemCounted" from="(itemList?.findAll{it.quantity != null &amp;&amp; it.quantity > 0}?.size() ?:0)"/>
             <set field="context.rejectedCount" from="(itemList?.findAll{it.statusId == 'INV_COUNT_REJECTED'}?.size() ?:0)"/>
 
             <entity-find entity-name="co.hotwax.warehouse.InvCountImportVariance" list="varianceList">
                 <econdition field-name="inventoryCountImportId"/>
             </entity-find>
-            <set field="context.totalVariance" from="(varianceList?.stream()?.map(it -> it.varianceQuantityOnHand)?.reduce(BigDecimal.ZERO, BigDecimal::add) ?:0)"/>
+            <set field="context.totalVariance" from="(varianceList?.stream()?.map(it -> (it.varianceQuantityOnHand?:0.0))?.reduce(BigDecimal.ZERO, BigDecimal::add) ?:0)"/>
             
             <entity-find entity-name="InvCountImportStatus" list="statusHistory">
                 <econdition field-name="inventoryCountImportId"/>
