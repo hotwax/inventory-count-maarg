@@ -198,7 +198,7 @@
                         <set field="existingImportItem.statusId" value="INV_COUNT_CREATED"/>
                         <set field="existingImportItem.quantity" from="null"/>
                         <set field="existingImportItem.importItemSeqId" from="null"/>
-                        <set field="existingImportItem.performedByPartyId" from="null"/>
+                        <set field="existingImportItem.countedByUserLoginId" from="null"/>
                         <service-call name="create#co.hotwax.warehouse.InventoryCountImportItem" in-map="existingImportItem"/>
                     </if>
                 </iterate>
