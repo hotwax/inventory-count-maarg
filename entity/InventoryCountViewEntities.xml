@@ -32,4 +32,36 @@ under the License.
         <alias name="statusDescription" field="description" entity-alias="SI"/>
         <alias name="facilityName" entity-alias="FAC"/>
     </view-entity>
+
+    <view-entity entity-name="InventoryCountImportItemView" package="co.hotwax.warehouse">
+        <member-entity entity-alias="ICI" entity-name="co.hotwax.warehouse.InventoryCountImport"/>
+        <member-entity entity-alias="ICII" entity-name="co.hotwax.warehouse.InventoryCountImportItem" join-from-alias="ICI">
+            <key-map field-name="inventoryCountImportId"/>
+        </member-entity>
+        <member-entity entity-alias="ICIV" entity-name="co.hotwax.warehouse.InvCountImportVariance" join-from-alias="ICII" join-optional="true">
+            <key-map field-name="inventoryCountImportId"/>
+            <key-map field-name="importItemSeqId" related="invCountImportItemSeqId"/>
+        </member-entity>
+        <member-entity entity-alias="USR" entity-name="org.apache.ofbiz.security.login.UserLogin" join-from-alias="ICII" join-optional="true">
+            <key-map field-name="countedByUserLoginId" related="userLoginId"/>
+        </member-entity>
+        <member-entity entity-alias="PER" entity-name="org.apache.ofbiz.party.party.Person" join-from-alias="USR" join-optional="true">
+            <key-map field-name="partyId"/>
+        </member-entity>
+        <member-entity entity-alias="PG" entity-name="org.apache.ofbiz.party.party.PartyGroup" join-from-alias="USR" join-optional="true">
+            <key-map field-name="partyId"/>
+        </member-entity>
+        <alias-all entity-alias="ICI"/>
+        <alias-all entity-alias="ICII">
+            <exclude field="inventoryCountImportId"/>
+            <exclude field="statusId"/>
+        </alias-all>
+        <alias-all entity-alias="ICIV">
+            <exclude field="invCountImportItemSeqId"/>
+        </alias-all>
+        <alias name="itemStatusId" field="statusId" entity-alias="ICII"/>
+        <alias name="countedByFirstName" field="firstName" entity-alias="PER"/>
+        <alias name="countedByLastName" field="lastName" entity-alias="PER"/>
+        <alias name="countedByGroupName" field="groupName" entity-alias="PG"/>
+    </view-entity>
 </entities>

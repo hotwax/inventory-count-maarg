@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<entity-facade-xml type="ext-seed">
+    <artifactGroups artifactGroupId="ICC_API" description="Directed Inventory Cycle Count API (via root resource)">
+        <artifacts artifactTypeEnumId="AT_REST_PATH" inheritAuthz="Y" artifactName="/inventory-cycle-count"/>
+        <!-- Full permissions for the ADMIN user group -->
+        <authz artifactAuthzId="ICC_API_ADMIN" userGroupId="ADMIN" authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
+    </artifactGroups>
+</entity-facade-xml>
