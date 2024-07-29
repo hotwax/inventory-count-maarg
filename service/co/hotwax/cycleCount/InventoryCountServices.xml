@@ -75,19 +75,23 @@
         <in-parameters>
             <parameter name="inventoryCountImportId" required="false"/>
             <parameter name="statusId"/>
-            <parameter name="viewIndex" type="Integer" default-value="0">
-                <description>The current view index to get the inventory count import items.</description>
+            <parameter name="orderBy" default-value="-inventoryCountImportId, importItemSeqId"/>
+            <parameter name="pageIndex" type="Integer" default-value="0">
+                <description>The current page index to get the inventory count import items.</description>
             </parameter>
-            <parameter name="viewSize" type="Integer" default-value="100">
+            <parameter name="pageSize" type="Integer" default-value="100">
+                <description>The maximum number of inventory count import items to display.</description>
+            </parameter>
+            <parameter name="pageSize" type="Integer" default-value="100">
                 <description>The maximum number of inventory count import items to display.</description>
             </parameter>
         </in-parameters>
         <out-parameters><parameter name="itemList" type="List"/></out-parameters>
         <actions>
-            <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItemView" list="invCountImpItemItr" offset="viewIndex * viewSize" limit="viewSize">
+            <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItemView" list="invCountImpItemItr">
+                <search-form-inputs default-order-by="${orderBy}" />
                 <econdition field-name="inventoryCountImportId" ignore-if-empty="true"/>
                 <econdition field-name="statusId" ignore-if-empty="true"/>
-                <use-iterator/>
             </entity-find>
             <set field="itemList" from="[]"/>
             <iterate list="invCountImpItemItr" entry="invCountImpItem">
