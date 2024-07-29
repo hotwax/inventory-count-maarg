@@ -82,9 +82,6 @@
             <parameter name="pageSize" type="Integer" default-value="100">
                 <description>The maximum number of inventory count import items to display.</description>
             </parameter>
-            <parameter name="pageSize" type="Integer" default-value="100">
-                <description>The maximum number of inventory count import items to display.</description>
-            </parameter>
         </in-parameters>
         <out-parameters><parameter name="itemList" type="List"/></out-parameters>
         <actions>
