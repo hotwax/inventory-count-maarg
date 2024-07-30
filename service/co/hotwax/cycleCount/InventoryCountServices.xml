@@ -71,12 +71,24 @@
 
     <service verb="get" noun="InventoryCountImportItemDetails">
         <description>Service to get Inventory Count Import Item details.</description>
-        <in-parameters><parameter name="inventoryCountImportId" required="true"/></in-parameters>
+        <!--Pass the inventoryCountImportId to fetch items of a particular Inventory Count only -->
+        <in-parameters>
+            <parameter name="inventoryCountImportId" required="false"/>
+            <parameter name="statusId"/>
+            <parameter name="orderBy" default-value="-inventoryCountImportId, importItemSeqId"/>
+            <parameter name="pageIndex" type="Integer" default-value="0">
+                <description>The current page index to get the inventory count import items.</description>
+            </parameter>
+            <parameter name="pageSize" type="Integer" default-value="100">
+                <description>The maximum number of inventory count import items to display.</description>
+            </parameter>
+        </in-parameters>
         <out-parameters><parameter name="itemList" type="List"/></out-parameters>
         <actions>
             <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItemView" list="invCountImpItemItr">
-                <econdition field-name="inventoryCountImportId"/>
-                <use-iterator/>
+                <search-form-inputs default-order-by="${orderBy}" />
+                <econdition field-name="inventoryCountImportId" ignore-if-empty="true"/>
+                <econdition field-name="statusId" ignore-if-empty="true"/>
             </entity-find>
             <set field="itemList" from="[]"/>
             <iterate list="invCountImpItemItr" entry="invCountImpItem">
