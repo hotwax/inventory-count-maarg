@@ -328,4 +328,90 @@
             <parameter name="comments"/>
         </in-parameters>
     </service>
+
+
+    <service verb="upload" noun="InventoryCountImports">
+        <in-parameters>
+            <parameter name="uploadedFile" type="Object" required="true"/>
+            <parameter name="fileName" required="true"/>
+        </in-parameters>
+        <actions>
+            <set field="nowDate" from="ec.user.nowTimestamp"/>
+            <!-- Fetch the receivePath from SystemMessageType to prepare the path for creating the file in the receiving system. Ex: Moqui's datamanager directory in runtime.-->
+            <entity-find-one entity-name="moqui.service.message.SystemMessageType" value-field="systemMessageType">
+                <field-map field-name="systemMessageTypeId" value="ImportInventoryCounts"/>
+            </entity-find-one>
+            
+            <set field="csvFilePathRef" from="ec.resource.expand(systemMessageType.receivePath, null,
+                        [contentRoot: ec.user.getPreference('mantle.content.root') ?: 'dbresource://datamanager', dateTime:ec.l10n.format(nowDate, 'yyyy-MM-dd-HH-mm-ss-SSS'), fileName: fileName], false)"/>
+            <set field="filePath" from="ec.resource.getLocationReference(csvFilePathRef).getUri().getPath()"/>
+
+            <script>
+                try {
+                    def uploadedFileStream = uploadedFile instanceof byte[] ? new ByteArrayInputStream(uploadedFile) : uploadedFile.getInputStream()
+                    File inventoryImportFile = new File(filePath)
+                    if (!inventoryImportFile.parentFile.exists()) inventoryImportFile.parentFile.mkdirs()
+
+                    org.apache.commons.io.FileUtils.copyInputStreamToFile(uploadedFileStream, inventoryImportFile)
+
+                } catch (Exception e) {
+                    ec.logger.error("Error in uploading file: ${fileName}")
+                }
+            </script>
+            <service-call name="create#moqui.service.message.SystemMessage" transaction="force-new"
+                    in-map="[systemMessageTypeId : 'ImportInventoryCounts', statusId:'SmsgReceived', isOutgoing:'N', messageText: filePath, initDate:ec.user.nowTimestamp]"
+                    out-map="result"/>
+        </actions>
+    </service>
+    <service verb="consume" noun="InventoryCountImportCsv" transaction-timeout="7200">
+        <in-parameters>
+            <parameter name="systemMessageId" required="true"/>
+        </in-parameters>
+        <actions>
+            <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="systemMessage"/>
+            <if condition="!systemMessage">
+                <return error="true" message="SystemMessage record not found for systemMessageId: ${systemMessageId}"/>
+            </if>
+            <set field="csvData" from="ec.resource.getLocationReference(systemMessage.messageText).getText()"/>
+            <script>
+                recordsLoaded = ec.entity.makeDataLoader().csvText(csvData).csvEntityName("co.hotwax.cycleCount.InventoryCountServices.import#InventoryCount").load()
+            </script>
+            <message>Loaded ${recordsLoaded} inventory count import items</message>
+        </actions>
+    </service>
+    <service verb="import" noun="InventoryCount" transaction="force-new">
+        <in-parameters>
+            <parameter name="countImportName" required="true"/>
+            <parameter name="facilityId"/>
+            <parameter name="externalFacilityId"/>
+            <parameter name="statusId"/>
+            <parameter name="dueDate"/>
+            <parameter name="productId"/>
+            <parameter name="idType"/>
+            <parameter name="idValue"/>
+        </in-parameters>
+        <actions>
+            <if condition="!facilityId &amp;&amp; externalFacilityId">
+                <entity-find entity-name="org.apache.ofbiz.product.facility.Facility" list="facilities">
+                    <econdition field-name="externalId" from="externalFacilityId"/>
+                </entity-find>
+                <set field="facilityId" from="facilities?.first?.facilityId"/>
+            </if>
+
+            <entity-find entity-name="co.hotwax.warehouse.InventoryCountImport" list="inventoryCountImports">
+                <econdition field-name="countImportName"/>
+                <econdition field-name="facilityId" or-null="true"/>
+            </entity-find>
+            <set field="inventoryCountImportId" from="inventoryCountImports?.first?.inventoryCountImportId"/>
+            <if condition="!inventoryCountImportId">
+                <service-call name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImport"
+                        in-map="context + [statusId: 'INV_COUNT_CREATED']"
+                        out-map="result"/>
+                <set field="inventoryCountImportId" from="result.inventoryCountImportId"/>
+            </if>
+            <service-call name="co.hotwax.cycleCount.InventoryCountServices.add#InventoryCountImportItems"
+                    in-map="[inventoryCountImportId: inventoryCountImportId, itemList: [[productId: productId, idType: idType, idValue: idValue, statusId: 'INV_COUNT_CREATED']] ]"
+                    out-map="result"/>
+        </actions>
+    </service>
 </services>

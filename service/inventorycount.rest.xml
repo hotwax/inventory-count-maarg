@@ -33,7 +33,16 @@
     <resource name="enums" description="Get the enumerations">
         <method type="get"><entity name="co.hotwax.common.enum.EnumerationAndType" operation="list"/></method>
     </resource>
-    
+    <resource name="dataManagerMappings">
+        <method type="get"><entity name="co.hotwax.datamanager.DataManagerMapping" operation="list"/></method>
+        <method type="post"><entity name="co.hotwax.datamanager.DataManagerMapping" operation="create"/></method>
+        <id name="mappingPrefId">
+            <method type="get"><entity name="co.hotwax.datamanager.DataManagerMapping" operation="one"/></method>
+            <method type="post"><entity name="co.hotwax.datamanager.DataManagerMapping" operation="store"/></method>
+            <method type="delete"><entity name="co.hotwax.datamanager.DataManagerMapping" operation="delete"/></method>
+        </id>
+    </resource>
+
     <!-- Inventory Cycle Count API:
         ** GET /inventory-cycle-count/cycleCounts - get all inventory cycle count import, use filters like status, facility, createdDate
         ** POST /inventory-cycle-count/cycleCounts - create new inventory cycle count import
@@ -106,6 +115,15 @@
         </resource>
         <resource name="stats">
             <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImportDetails"/></method>
+        </resource>
+        <resource name="bulkUpload">
+            <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.upload#InventoryCountImports"/></method>
+        </resource>
+        <resource name="systemMessages">
+            <method type="get"><entity name="moqui.service.message.SystemMessage" operation="list"/></method>
+            <id name="systemMessageId">
+                <method type="post"><entity name="moqui.service.message.SystemMessage" operation="store"/></method>
+            </id>
         </resource>
     </resource>
 </resource>
