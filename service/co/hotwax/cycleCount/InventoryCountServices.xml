@@ -332,8 +332,7 @@
 
     <service verb="upload" noun="InventoryCountImports">
         <in-parameters>
-            <parameter name="uploadedFile" type="Object" required="true"/>
-            <parameter name="fileName" required="true"/>
+            <parameter name="uploadedFile" type="org.apache.commons.fileupload.FileItem" required="true"/>
         </in-parameters>
         <actions>
             <set field="nowDate" from="ec.user.nowTimestamp"/>
@@ -341,25 +340,22 @@
             <entity-find-one entity-name="moqui.service.message.SystemMessageType" value-field="systemMessageType">
                 <field-map field-name="systemMessageTypeId" value="ImportInventoryCounts"/>
             </entity-find-one>
-            
-            <set field="csvFilePathRef" from="ec.resource.expand(systemMessageType.receivePath, null,
-                        [contentRoot: ec.user.getPreference('mantle.content.root') ?: 'dbresource://datamanager', dateTime:ec.l10n.format(nowDate, 'yyyy-MM-dd-HH-mm-ss-SSS'), fileName: fileName], false)"/>
-            <set field="filePath" from="ec.resource.getLocationReference(csvFilePathRef).getUri().getPath()"/>
 
-            <script>
+            <set field="fileName" from="uploadedFile.getName()"/>
+            <set field="csvFilePath" from="ec.resource.expand(systemMessageType.receivePath, null,
+            [contentRoot: ec.user.getPreference('mantle.content.root') ?: 'dbresource://datamanager', dateTime:ec.l10n.format(nowDate, 'yyyy-MM-dd-HH-mm-ss-SSS'), fileName: fileName], false)"/>
+            <set field="fileReference" from="ec.resource.getLocationReference(csvFilePath)"/>
+
+            <script><![CDATA[
+                fileStream = uploadedFile.getInputStream()
                 try {
-                    def uploadedFileStream = uploadedFile instanceof byte[] ? new ByteArrayInputStream(uploadedFile) : uploadedFile.getInputStream()
-                    File inventoryImportFile = new File(filePath)
-                    if (!inventoryImportFile.parentFile.exists()) inventoryImportFile.parentFile.mkdirs()
-
-                    org.apache.commons.io.FileUtils.copyInputStreamToFile(uploadedFileStream, inventoryImportFile)
-
-                } catch (Exception e) {
-                    ec.logger.error("Error in uploading file: ${fileName}")
+                    fileReference.putStream(fileStream)
+                } finally {
+                    fileStream.close()
                 }
-            </script>
+            ]]></script>
             <service-call name="create#moqui.service.message.SystemMessage" transaction="force-new"
-                    in-map="[systemMessageTypeId : 'ImportInventoryCounts', statusId:'SmsgReceived', isOutgoing:'N', messageText: filePath, initDate:ec.user.nowTimestamp]"
+                    in-map="[systemMessageTypeId : 'ImportInventoryCounts', statusId:'SmsgReceived', isOutgoing:'N', messageText: csvFilePath, initDate:ec.user.nowTimestamp]"
                     out-map="result"/>
         </actions>
     </service>

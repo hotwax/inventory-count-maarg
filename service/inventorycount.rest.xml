@@ -116,7 +116,7 @@
         <resource name="stats">
             <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImportDetails"/></method>
         </resource>
-        <resource name="bulkUpload">
+        <resource name="upload">
             <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.upload#InventoryCountImports"/></method>
         </resource>
         <resource name="systemMessages">
