@@ -398,8 +398,11 @@
             <entity-find entity-name="co.hotwax.warehouse.InventoryCountImport" list="inventoryCountImports">
                 <econdition field-name="countImportName"/>
                 <econdition field-name="facilityId" or-null="true"/>
+                <!--Allowing addition of items in the existing cycle count in draft or assigned status only-->
+                <econdition field-name="statusId" operator="in" value="INV_COUNT_CREATED,INV_COUNT_ASSIGNED"/>
             </entity-find>
             <set field="inventoryCountImportId" from="inventoryCountImports?.first?.inventoryCountImportId"/>
+            
             <if condition="!inventoryCountImportId">
                 <service-call name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImport"
                         in-map="context + [statusId: 'INV_COUNT_CREATED']"
