@@ -342,6 +342,7 @@
             </entity-find-one>
 
             <set field="fileName" from="uploadedFile.getName()"/>
+            <set field="fileName" from="fileName.substring(0, fileName.lastIndexOf('.csv'))"/>
             <set field="csvFilePath" from="ec.resource.expand(systemMessageType.receivePath, null,
             [contentRoot: ec.user.getPreference('mantle.content.root') ?: 'dbresource://datamanager', dateTime:ec.l10n.format(nowDate, 'yyyy-MM-dd-HH-mm-ss-SSS'), fileName: fileName], false)"/>
             <set field="fileReference" from="ec.resource.getLocationReference(csvFilePath)"/>
