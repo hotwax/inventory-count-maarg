@@ -95,7 +95,7 @@
                 <set field="itemDetail" from="invCountImpItem?.getMap()"/>
                 <set field="qtyOnHand" from="0.0"/>
                 <entity-find-one entity-name="co.hotwax.warehouse.InvCountImportVariance" value-field="countImportVariance">
-                    <field-map field-name="inventoryCountImportId"/>
+                    <field-map field-name="inventoryCountImportId" from="invCountImpItem.inventoryCountImportId"/>
                     <field-map field-name="invCountImportItemSeqId" from="invCountImpItem.importItemSeqId"/>
                 </entity-find-one>
                 <if condition="countImportVariance">
