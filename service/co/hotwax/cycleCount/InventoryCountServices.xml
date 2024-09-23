@@ -30,7 +30,7 @@
             <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportView" include="all"/>
         </out-parameters>
         <actions>
-            <set field="context.uploadedByUserLogin" from="ec.user.getUsername()" default-value="${System.getProperty('default.oms.user')}"/>
+            <set field="context.uploadedByUserLogin" from="ec.user.getUsername()"/>
             <service-call name="create#co.hotwax.warehouse.InventoryCountImport" in-map="context + [createdDate: ec.user.nowTimestamp]" out-map="context"/>
 
             <if condition="context.statusId"><service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:context.inventoryCountImportId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:context.uploadedByUserLogin]"/></if>
@@ -171,7 +171,7 @@
                     <set field="item.inventoryCountImportId" from="context.inventoryCountImportId"/>
                     <!-- Not checking if idValue is already added. One can just reject duplicate records if added multiple times. -->
                     <set field="item.createdDate" from="ec.user.nowTimestamp"/>
-                    <set field="item.createdByUserLoginId" from="ec.user.getUsername()" default-value="${System.getProperty('default.oms.user')}"/>
+                    <set field="item.createdByUserLoginId" from="ec.user.getUsername()"/>
                     <service-call name="create#co.hotwax.warehouse.InventoryCountImportItem" in-map="item"/>
                 </if>
             </iterate>
