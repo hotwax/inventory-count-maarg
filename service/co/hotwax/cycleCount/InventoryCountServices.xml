@@ -170,6 +170,7 @@
                     <set field="item.productId" from="item.idValue"/>
                     <set field="item.inventoryCountImportId" from="context.inventoryCountImportId"/>
                     <!-- Not checking if idValue is already added. One can just reject duplicate records if added multiple times. -->
+                    <set field="item.createdDate" from="ec.user.nowTimestamp"/>
                     <service-call name="create#co.hotwax.warehouse.InventoryCountImportItem" in-map="item"/>
                 </if>
             </iterate>
