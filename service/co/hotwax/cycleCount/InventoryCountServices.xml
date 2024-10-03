@@ -95,7 +95,7 @@
                 <set field="itemDetail" from="invCountImpItem?.getMap()"/>
                 <set field="qtyOnHand" from="0.0"/>
                 <entity-find-one entity-name="co.hotwax.warehouse.InvCountImportVariance" value-field="countImportVariance">
-                    <field-map field-name="inventoryCountImportId"/>
+                    <field-map field-name="inventoryCountImportId" from="invCountImpItem.inventoryCountImportId"/>
                     <field-map field-name="invCountImportItemSeqId" from="invCountImpItem.importItemSeqId"/>
                 </entity-find-one>
                 <if condition="countImportVariance">
@@ -170,6 +170,8 @@
                     <set field="item.productId" from="item.idValue"/>
                     <set field="item.inventoryCountImportId" from="context.inventoryCountImportId"/>
                     <!-- Not checking if idValue is already added. One can just reject duplicate records if added multiple times. -->
+                    <set field="item.createdDate" from="ec.user.nowTimestamp"/>
+                    <set field="item.createdByUserLoginId" from="ec.user.getUsername()"/>
                     <service-call name="create#co.hotwax.warehouse.InventoryCountImportItem" in-map="item"/>
                 </if>
             </iterate>
@@ -342,6 +344,7 @@
             </entity-find-one>
 
             <set field="fileName" from="uploadedFile.getName()"/>
+            <set field="fileName" from="fileName.substring(0, fileName.lastIndexOf('.csv'))"/>
             <set field="csvFilePath" from="ec.resource.expand(systemMessageType.receivePath, null,
             [contentRoot: ec.user.getPreference('mantle.content.root') ?: 'dbresource://datamanager', dateTime:ec.l10n.format(nowDate, 'yyyy-MM-dd-HH-mm-ss-SSS'), fileName: fileName], false)"/>
             <set field="fileReference" from="ec.resource.getLocationReference(csvFilePath)"/>
@@ -387,6 +390,13 @@
             <parameter name="idValue"/>
         </in-parameters>
         <actions>
+
+            <!--Processing cycle count items in Draft and Assigned status only-->
+            <set field="allowedStatusIds" value="['INV_COUNT_CREATED', 'INV_COUNT_ASSIGNED']"/>
+            <if condition="statusId != null &amp;&amp; !allowedStatusIds.contains(statusId)">
+                <return/>
+            </if>
+
             <if condition="!facilityId &amp;&amp; externalFacilityId">
                 <entity-find entity-name="org.apache.ofbiz.product.facility.Facility" list="facilities">
                     <econdition field-name="externalId" from="externalFacilityId"/>
@@ -394,14 +404,20 @@
                 <set field="facilityId" from="facilities?.first?.facilityId"/>
             </if>
 
+            <if condition="statusId != null">
+                <set field="allowedStatusIds" from="statusId"/>
+            </if>
             <entity-find entity-name="co.hotwax.warehouse.InventoryCountImport" list="inventoryCountImports">
                 <econdition field-name="countImportName"/>
                 <econdition field-name="facilityId" or-null="true"/>
+                <!--Allowing addition of items in the existing cycle count in draft or assigned status only-->
+                <econdition field-name="statusId" operator="in" from="allowedStatusIds"/>
             </entity-find>
             <set field="inventoryCountImportId" from="inventoryCountImports?.first?.inventoryCountImportId"/>
+            
             <if condition="!inventoryCountImportId">
                 <service-call name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImport"
-                        in-map="context + [statusId: 'INV_COUNT_CREATED']"
+                        in-map="context + [statusId: statusId ? statusId : 'INV_COUNT_CREATED']"
                         out-map="result"/>
                 <set field="inventoryCountImportId" from="result.inventoryCountImportId"/>
             </if>
