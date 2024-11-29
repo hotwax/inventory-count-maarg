@@ -123,6 +123,12 @@
             <method type="get"><entity name="moqui.service.message.SystemMessage" operation="list"/></method>
             <id name="systemMessageId">
                 <method type="post"><entity name="moqui.service.message.SystemMessage" operation="store"/></method>
+                <resource name="downloadFile">
+                    <method type="get"><service name="co.hotwax.cycleCount.InventoryCountServices.get#UploadedCsvFile"/></method>
+                </resource>
+                <resource name="errors">
+                    <method type="get"><entity name="moqui.service.message.SystemMessageError" operation="list"/></method>
+                </resource>
             </id>
         </resource>
     </resource>
