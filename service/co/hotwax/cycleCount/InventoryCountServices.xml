@@ -123,6 +123,14 @@
                 <if condition="lastCountedItems &amp;&amp; lastCountedItems.size() > 0">
                     <set field="itemDetail.lastCountedDate" from="lastCountedItems?.get(0).get('createdDate')"/>
                 </if>
+
+                <!--Get the accepted by user detail for the inventory count import item-->
+                <entity-find entity-name="InvCountImportStatus" list="itemStatusHistory">
+                    <econdition field-name="inventoryCountImportId" from="invCountImpItem.inventoryCountImportId"/>
+                    <econdition field-name="importItemSeqId" from="invCountImpItem.importItemSeqId"/>
+                    <econdition field-name="statusId" value="INV_COUNT_COMPLETED" />
+                </entity-find>
+                <set field="itemDetail.acceptedByUserLoginId" from="itemStatusHistory?.first?.changeByUserLoginId"/>
                 <script>itemList.add(itemDetail)</script>
             </iterate>
         </actions>
