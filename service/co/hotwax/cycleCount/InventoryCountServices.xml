@@ -140,11 +140,14 @@
 
             <!-- check for status change if yes then check for status valid change if yes then return error-->
             <if condition="context.statusId &amp;&amp; invCountImpItem.statusId != context.statusId">
-                <service-call name="check#StatusValidChange" in-map="[statusId:invCountImpItem.statusId, statusIdTo:context.statusId]" out-map="checkStatus"/>
+                <service-call name="co.hotwax.cycleCount.InventoryCountServices.check#StatusValidChange" in-map="[statusId:invCountImpItem.statusId, statusIdTo:context.statusId]" out-map="checkStatus"/>
                 <if condition="!checkStatus"><return error="true" message="Invalid status change."/></if>
             </if>
 
             <service-call name="update#co.hotwax.warehouse.InventoryCountImportItem" in-map="context"/>
+            <if condition="context.statusId">
+                <service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:context.importItemSeqId, statusId:context.statusId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:ec.user.getUsername()]"/>
+            </if>
         </actions>
     </service>
 
@@ -172,7 +175,8 @@
                     <!-- Not checking if idValue is already added. One can just reject duplicate records if added multiple times. -->
                     <set field="item.createdDate" from="ec.user.nowTimestamp"/>
                     <set field="item.createdByUserLoginId" from="ec.user.getUsername()"/>
-                    <service-call name="create#co.hotwax.warehouse.InventoryCountImportItem" in-map="item"/>
+                    <service-call name="create#co.hotwax.warehouse.InventoryCountImportItem" in-map="item" out-map="createImportItemResult"/>
+                    <service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:createImportItemResult.importItemSeqId, statusId:item.statusId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:ec.user.getUsername()]"/>
                 </if>
             </iterate>
             <return message="Inventory Count Import Items added successfully."/>
@@ -189,7 +193,7 @@
             <if condition="itemList == null || itemList.size() == 0"><return message="No Items Found"/></if>
             <iterate list="itemList" entry="importItem">
                 <set field="importItem.inventoryCountImportId" from="inventoryCountImportId"/>
-                <service-call name="update#InventoryCountImportItem" in-map="importItem"/>
+                <service-call name="co.hotwax.cycleCount.InventoryCountServices.update#InventoryCountImportItem" in-map="importItem"/>
             </iterate>
             <return message="Inventory Count Import Items added successfully."/>
         </actions>
@@ -316,8 +320,7 @@
             <service-call name="create#co.hotwax.warehouse.InvCountImportVariance" in-map="inMap"/>
 
             <!-- Marking Item as accepted/completed. -->
-            <service-call name="update#InventoryCountImportItem" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:context.importItemSeqId, statusId:'INV_COUNT_COMPLETED', acceptedByUserLoginId:ec.user.getUsername()]"/>
-
+            <service-call name="co.hotwax.cycleCount.InventoryCountServices.update#InventoryCountImportItem" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:context.importItemSeqId, statusId:'INV_COUNT_COMPLETED']"/>
             <return type="info" message="Inventory Count Import Item Approved."/>
         </actions>
     </service>
