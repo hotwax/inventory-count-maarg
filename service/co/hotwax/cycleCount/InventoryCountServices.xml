@@ -383,13 +383,16 @@
                 <return error="true" message="SystemMessage record not found for systemMessageId: ${systemMessageId}"/>
             </if>
             <set field="csvData" from="ec.resource.getLocationReference(systemMessage.messageText).getText()"/>
+            <if condition="!csvData">
+                <return error="true" message="Csv data not found for systemMessageId: ${systemMessageId}"/>
+            </if>
             <script>
                 recordsLoaded = ec.entity.makeDataLoader().csvText(csvData).csvEntityName("co.hotwax.cycleCount.InventoryCountServices.import#InventoryCount").load()
             </script>
             <message>Loaded ${recordsLoaded} inventory count import items</message>
         </actions>
     </service>
-    <service verb="import" noun="InventoryCount" transaction="force-new">
+    <service verb="import" noun="InventoryCount">
         <in-parameters>
             <parameter name="countImportName" required="true"/>
             <parameter name="facilityId"/>
@@ -402,10 +405,12 @@
         </in-parameters>
         <actions>
 
-            <!--Processing cycle count items in Draft and Assigned status only-->
-            <set field="allowedStatusIds" value="['INV_COUNT_CREATED', 'INV_COUNT_ASSIGNED']"/>
-            <if condition="statusId != null &amp;&amp; !allowedStatusIds.contains(statusId)">
-                <return/>
+            <service-call name="co.hotwax.cycleCount.InventoryCountServices.validate#InventoryCount"
+                          in-map="context"
+                          out-map="validationResult"/>
+            <if condition="!validationResult.errorList.isEmpty()">
+                <script>errorMessage = validationResult.errorList.join("; ")</script>
+                <return error="true" message="${errorMessage}"/>
             </if>
 
             <if condition="!facilityId &amp;&amp; externalFacilityId">
@@ -435,6 +440,69 @@
             <service-call name="co.hotwax.cycleCount.InventoryCountServices.add#InventoryCountImportItems"
                     in-map="[inventoryCountImportId: inventoryCountImportId, itemList: [[productId: productId, idType: idType, idValue: idValue, statusId: 'INV_COUNT_CREATED']] ]"
                     out-map="result"/>
+        </actions>
+    </service>
+    <service verb="validate" noun="InventoryCount">
+        <implements service="co.hotwax.cycleCount.InventoryCountServices.import#InventoryCount"/>
+        <out-parameters>
+            <parameter name="errorList"/>
+        </out-parameters>
+        <actions>
+            <set field="errorList" from="[]"/>
+            <script>
+                import java.time.format.DateTimeFormatter
+                import java.time.format.DateTimeParseException
+            </script>
+
+            <!--Processing cycle count items in Draft and Assigned status only-->
+            <set field="allowedStatusIds" value="['INV_COUNT_CREATED', 'INV_COUNT_ASSIGNED']"/>
+            <if condition="statusId != null &amp;&amp; !allowedStatusIds.contains(statusId)">
+                <script>errorList.add("Invalid statusId: ${statusId}. Allowed values are INV_COUNT_CREATED or INV_COUNT_ASSIGNED.")</script>
+            </if>
+
+            <!-- Validate facilityId -->
+            <if condition="facilityId">
+                <entity-find-one entity-name="org.apache.ofbiz.product.facility.Facility" value-field="facility"/>
+                <if condition="!facility">
+                    <script>errorList.add("Invalid facilityId: ${facilityId}. No matching facility found.")</script>
+                </if>
+            </if>
+
+            <!-- Validate externalFacilityId -->
+            <if condition="!facilityId &amp;&amp; externalFacilityId">
+                <entity-find entity-name="org.apache.ofbiz.product.facility.Facility" list="facilities">
+                    <econdition field-name="externalId" from="externalFacilityId"/>
+                </entity-find>
+                <if condition="!facilities">
+                    <script>errorList.add("Invalid externalFacilityId: ${externalFacilityId}. No matching facility found.")</script>
+                </if>
+            </if>
+
+            <!-- Validate dueDate format: yyyy-MM-dd -->
+            <if condition="dueDate">
+                <script>
+                    try {
+                        LocalDate.parse(dueDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                    } catch (DateTimeParseException e) {
+                        errorList.add("Invalid dueDate format: ${dueDate}. Expected format is yyyy-MM-dd.")
+                    }
+                </script>
+            </if>
+        </actions>
+    </service>
+    <service verb="get" noun="UploadedCsvFile">
+        <in-parameters>
+            <parameter name="systemMessageId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="csvData"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="moqui.service.message.SystemMessage" value-field="systemMessage"/>
+            <if condition="!systemMessage">
+                <return error="true" message="SystemMessage record not found for systemMessageId: ${systemMessageId}"/>
+            </if>
+            <set field="csvData" from="ec.resource.getLocationReference(systemMessage.messageText).getText()"/>
         </actions>
     </service>
 </services>
