@@ -372,6 +372,9 @@
                 <return error="true" message="SystemMessage record not found for systemMessageId: ${systemMessageId}"/>
             </if>
             <set field="csvData" from="ec.resource.getLocationReference(systemMessage.messageText).getText()"/>
+            <if condition="!csvData">
+                <return error="true" message="Csv data not found for systemMessageId: ${systemMessageId}"/>
+            </if>
             <script>
                 recordsLoaded = ec.entity.makeDataLoader().csvText(csvData).csvEntityName("co.hotwax.cycleCount.InventoryCountServices.import#InventoryCount").load()
             </script>
