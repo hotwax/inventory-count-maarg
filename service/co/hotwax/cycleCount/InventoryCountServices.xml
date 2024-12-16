@@ -17,6 +17,19 @@
         </actions>
     </service>
 
+    <service verb="create" noun="InventoryCountImports">
+        <description>Service to create Inventory Count Imports</description>
+        <in-parameters>
+            <parameter name="inventoryCountImports" type="List" required="true"/>
+        </in-parameters>
+        <actions>
+            <iterate list="inventoryCountImports" entry="inventoryCountImport">
+                <service-call name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImport"
+                              in-map="inventoryCountImport"/>
+            </iterate>
+            <return message="Inventory Count Imports added successfully."/>
+        </actions>
+    </service>
     <service verb="create" noun="InventoryCountImport">
         <description>Service to create an Inventory Count Import and status history.</description>
         <in-parameters>
