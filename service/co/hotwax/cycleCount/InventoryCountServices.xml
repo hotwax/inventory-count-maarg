@@ -27,7 +27,7 @@
                 <service-call name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImport"
                               in-map="inventoryCountImport"/>
             </iterate>
-            <return message="Inventory Count Imports added successfully."/>
+            <return message="Inventory Count Imports created successfully."/>
         </actions>
     </service>
     <service verb="create" noun="InventoryCountImport">
