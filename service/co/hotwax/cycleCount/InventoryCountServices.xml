@@ -177,6 +177,9 @@
             <parameter name="inventoryCountImportId" required="true"/>
             <parameter name="itemList" type="List"/>
         </in-parameters>
+        <out-parameters>
+            <parameter name="itemList" type="List"/>
+        </out-parameters>
         <actions>
             <if condition="itemList == null || itemList.size() == 0"><return message="No Items Found"/></if>
             <iterate list="itemList" entry="item">
@@ -198,6 +201,7 @@
                     <set field="item.createdByUserLoginId" from="ec.user.getUsername()"/>
                     <service-call name="create#co.hotwax.warehouse.InventoryCountImportItem" in-map="item" out-map="createImportItemResult"/>
                     <service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:createImportItemResult.importItemSeqId, statusId:item.statusId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:ec.user.getUsername()]"/>
+                    <set field="item.importItemSeqId" from="createImportItemResult.importItemSeqId"/>
                 </if>
             </iterate>
             <return message="Inventory Count Import Items added successfully."/>
