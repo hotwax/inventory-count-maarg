@@ -86,7 +86,8 @@
         <description>Service to get Inventory Count Import Item details.</description>
         <!--Pass the inventoryCountImportId to fetch items of a particular Inventory Count only -->
         <in-parameters>
-            <parameter name="inventoryCountImportId" required="false"/>
+            <parameter name="inventoryCountImportId"/>
+            <parameter name="importItemSeqId"/>
             <parameter name="statusId"/>
             <parameter name="orderBy" default-value="-inventoryCountImportId, importItemSeqId"/>
             <parameter name="pageIndex" type="Integer" default-value="0">
@@ -101,6 +102,7 @@
             <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItemView" list="invCountImpItemItr">
                 <search-form-inputs default-order-by="${orderBy}" />
                 <econdition field-name="inventoryCountImportId" ignore-if-empty="true"/>
+                <econdition field-name="importItemSeqId" ignore-if-empty="true"/>
                 <econdition field-name="statusId" ignore-if-empty="true"/>
             </entity-find>
             <set field="itemList" from="[]"/>
