@@ -6,6 +6,7 @@
         <in-parameters>
             <parameter name="statusId" required="true"/>
             <parameter name="toStatusId" required="true"/>
+            <parameter name="statusFlowId" default-value="Default"/>
         </in-parameters>
         <out-parameters>
             <parameter name="isValidChange" required="true"/>
