@@ -5,13 +5,13 @@
         <description>Service to check if an Inventory Count Import Status change is valid.</description>
         <in-parameters>
             <parameter name="statusId" required="true"/>
-            <parameter name="statusIdTo" required="true"/>
+            <parameter name="toStatusId" required="true"/>
         </in-parameters>
         <out-parameters>
             <parameter name="isValidChange" required="true"/>
         </out-parameters>
         <actions>
-            <entity-find-one entity-name="org.apache.ofbiz.common.status.StatusValidChange" value-field="checkStatus"/>
+            <entity-find-one entity-name="moqui.basic.StatusFlowTransition" value-field="checkStatus"/>
             <!-- Its a valid status change -->
             <set field="isValidChange" from="checkStatus != null"/>
         </actions>
@@ -69,7 +69,7 @@
                 <service-call name="update#co.hotwax.warehouse.InventoryCountImport" in-map="context"/>
 
                 <if condition="context.statusId &amp;&amp; oldStatusId != context.statusId">
-                    <service-call name="co.hotwax.cycleCount.InventoryCountServices.check#StatusValidChange" in-map="[statusId:oldStatusId, statusIdTo:context.statusId]" out-map="checkStatus"/>
+                    <service-call name="co.hotwax.cycleCount.InventoryCountServices.check#StatusValidChange" in-map="[statusId:oldStatusId, toStatusId:context.statusId]" out-map="checkStatus"/>
                     <if condition="!checkStatus">
                         <return error="true" message="Invalid status change."/>
                     </if>
@@ -163,7 +163,7 @@
 
             <!-- check for status change if yes then check for status valid change if yes then return error-->
             <if condition="context.statusId &amp;&amp; invCountImpItem.statusId != context.statusId">
-                <service-call name="co.hotwax.cycleCount.InventoryCountServices.check#StatusValidChange" in-map="[statusId:invCountImpItem.statusId, statusIdTo:context.statusId]" out-map="checkStatus"/>
+                <service-call name="co.hotwax.cycleCount.InventoryCountServices.check#StatusValidChange" in-map="[statusId:invCountImpItem.statusId, toStatusId:context.statusId]" out-map="checkStatus"/>
                 <if condition="!checkStatus"><return error="true" message="Invalid status change."/></if>
             </if>
 
