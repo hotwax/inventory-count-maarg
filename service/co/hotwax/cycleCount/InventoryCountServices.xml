@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
 
-    <service verb="check" noun="StatusValidChange">
-        <description>Service to check if an Inventory Count Import Status change is valid.</description>
-        <in-parameters>
-            <parameter name="statusId" required="true"/>
-            <parameter name="statusIdTo" required="true"/>
-        </in-parameters>
-        <out-parameters>
-            <parameter name="isValidChange" required="true"/>
-        </out-parameters>
-        <actions>
-            <entity-find-one entity-name="org.apache.ofbiz.common.status.StatusValidChange" value-field="checkStatus"/>
-            <!-- Its a valid status change -->
-            <set field="isValidChange" from="checkStatus != null"/>
-        </actions>
-    </service>
-
     <service verb="create" noun="InventoryCountImports">
         <description>Service to create Inventory Count Imports</description>
         <in-parameters>
@@ -69,11 +53,6 @@
                 <service-call name="update#co.hotwax.warehouse.InventoryCountImport" in-map="context"/>
 
                 <if condition="context.statusId &amp;&amp; oldStatusId != context.statusId">
-                    <service-call name="co.hotwax.cycleCount.InventoryCountServices.check#StatusValidChange" in-map="[statusId:oldStatusId, statusIdTo:context.statusId]" out-map="checkStatus"/>
-                    <if condition="!checkStatus">
-                        <return error="true" message="Invalid status change."/>
-                    </if>
-                    <!-- If its a valid status change -->
                     <service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:context.inventoryCountImportId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:ec.user.getUsername()]"/>
                 </if>
             </if>
@@ -161,14 +140,8 @@
             <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportItem" value-field="invCountImpItem"/>
             <if condition="!invCountImpItem"><return error="true" message="Item not Found"/></if>
 
-            <!-- check for status change if yes then check for status valid change if yes then return error-->
-            <if condition="context.statusId &amp;&amp; invCountImpItem.statusId != context.statusId">
-                <service-call name="co.hotwax.cycleCount.InventoryCountServices.check#StatusValidChange" in-map="[statusId:invCountImpItem.statusId, statusIdTo:context.statusId]" out-map="checkStatus"/>
-                <if condition="!checkStatus"><return error="true" message="Invalid status change."/></if>
-            </if>
-
             <service-call name="update#co.hotwax.warehouse.InventoryCountImportItem" in-map="context"/>
-            <if condition="context.statusId">
+            <if condition="context.statusId &amp;&amp; invCountImpItem.statusId != context.statusId">
                 <service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:context.importItemSeqId, statusId:context.statusId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:ec.user.getUsername()]"/>
             </if>
         </actions>
