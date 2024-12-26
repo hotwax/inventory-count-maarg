@@ -361,8 +361,8 @@
             <set field="inventoryCountImportId" from="inventoryCountImports?.first?.inventoryCountImportId"/>
             
             <if condition="!inventoryCountImportId">
-                <service-call name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImport"
-                        in-map="context + [statusId: statusId ? statusId : 'INV_COUNT_CREATED']"
+                <service-call name="create#co.hotwax.warehouse.InventoryCountImport"
+                        in-map="context + [statusId: statusId ? statusId : 'INV_COUNT_CREATED', uploadedByUserLogin: ec.user.getUsername(), createdDate: ec.user.nowTimestamp]"
                         out-map="result"/>
                 <set field="inventoryCountImportId" from="result.inventoryCountImportId"/>
             </if>
