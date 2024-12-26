@@ -49,7 +49,7 @@
      -->
     <resource name="cycleCounts">
         <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportView" operation="list"/></method>
-        <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImport"/></method>
+        <method type="post"><entity name="co.hotwax.warehouse.InventoryCountImport" operation="create"/></method>
         <resource name="bulk">
             <method type="post">
                 <service name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImports"/>
@@ -70,7 +70,7 @@
          -->
         <id name="inventoryCountImportId">
             <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportView" operation="one"/></method>
-            <method type="put"><service name="co.hotwax.cycleCount.InventoryCountServices.update#InventoryCountImport"/></method>
+            <method type="put"><entity name="co.hotwax.warehouse.InventoryCountImport" operation="update"/></method>
             <!-- Inventory Cycle Count API:
                 ** GET /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items - get inventory cycle count items
             -->
@@ -81,7 +81,7 @@
                     ** DELETE /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items/{importItemSeqId} - delete inventory cycle count item
                 -->
                 <id name="importItemSeqId">
-                    <method type="put"><service name="co.hotwax.cycleCount.InventoryCountServices.update#InventoryCountImportItem"/></method>
+                    <method type="put"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="update"/></method>
                     <method type="delete"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="delete"/></method>
 
                     <resource name="approve">
