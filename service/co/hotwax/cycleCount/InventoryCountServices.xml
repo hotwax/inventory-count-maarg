@@ -8,56 +8,10 @@
         </in-parameters>
         <actions>
             <iterate list="inventoryCountImports" entry="inventoryCountImport">
-                <service-call name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImport"
+                <service-call name="create#co.hotwax.warehouse.InventoryCountImport"
                               in-map="inventoryCountImport"/>
             </iterate>
             <return message="Inventory Count Imports created successfully."/>
-        </actions>
-    </service>
-    <service verb="create" noun="InventoryCountImport">
-        <description>Service to create an Inventory Count Import and status history.</description>
-        <in-parameters>
-            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImport" include="nonpk">
-                <exclude field-name="uploadedByUserLogin"/>
-                <exclude field-name="createdDate"/>
-                <exclude field-name="lastUpdatedStamp"/>
-            </auto-parameters>
-        </in-parameters>
-        <out-parameters>
-            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportView" include="all"/>
-        </out-parameters>
-        <actions>
-            <set field="context.uploadedByUserLogin" from="ec.user.getUsername()"/>
-            <service-call name="create#co.hotwax.warehouse.InventoryCountImport" in-map="context + [createdDate: ec.user.nowTimestamp]" out-map="context"/>
-
-            <if condition="context.statusId"><service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:context.inventoryCountImportId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:context.uploadedByUserLogin]"/></if>
-
-            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="context"/>
-        </actions>
-    </service>
-    <service verb="update" noun="InventoryCountImport">
-        <description>Service to update an Inventory Count Import.</description>
-        <in-parameters>
-            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImport" include="pk" required="true"/>
-            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImport" include="nonpk">
-                <exclude field-name="uploadedByUserLogin"/>
-            </auto-parameters>
-        </in-parameters>
-        <out-parameters>
-            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportView" include="all"/>
-        </out-parameters>
-        <actions>
-            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImport" value-field="invCountImp"/>
-            <if condition="invCountImp">
-                <set field="oldStatusId" from="invCountImp.statusId"/>
-                <service-call name="update#co.hotwax.warehouse.InventoryCountImport" in-map="context"/>
-
-                <if condition="context.statusId &amp;&amp; oldStatusId != context.statusId">
-                    <service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[statusId:context.statusId, inventoryCountImportId:context.inventoryCountImportId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:ec.user.getUsername()]"/>
-                </if>
-            </if>
-
-            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="context"/>
         </actions>
     </service>
 
@@ -130,23 +84,6 @@
         </actions>
     </service>
 
-    <service verb="update" noun="InventoryCountImportItem">
-        <description>Service to update Inventory Count Import Item.</description>
-        <in-parameters>
-            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportItem" include="pk" required="true"/>
-            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportItem" include="nonpk"/>
-        </in-parameters>
-        <actions>
-            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportItem" value-field="invCountImpItem"/>
-            <if condition="!invCountImpItem"><return error="true" message="Item not Found"/></if>
-
-            <service-call name="update#co.hotwax.warehouse.InventoryCountImportItem" in-map="context"/>
-            <if condition="context.statusId &amp;&amp; invCountImpItem.statusId != context.statusId">
-                <service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:context.importItemSeqId, statusId:context.statusId, statusDate:ec.user.nowTimestamp, changeByUserLoginId:ec.user.getUsername()]"/>
-            </if>
-        </actions>
-    </service>
-
     <service verb="add" noun="InventoryCountImportItems">
         <in-parameters>
             <parameter name="inventoryCountImportId" required="true"/>
@@ -193,7 +130,7 @@
             <if condition="itemList == null || itemList.size() == 0"><return message="No Items Found"/></if>
             <iterate list="itemList" entry="importItem">
                 <set field="importItem.inventoryCountImportId" from="inventoryCountImportId"/>
-                <service-call name="co.hotwax.cycleCount.InventoryCountServices.update#InventoryCountImportItem" in-map="importItem"/>
+                <service-call name="update#co.hotwax.warehouse.InventoryCountImportItem" in-map="importItem"/>
             </iterate>
             <return message="Inventory Count Import Items added successfully."/>
         </actions>
@@ -424,8 +361,8 @@
             <set field="inventoryCountImportId" from="inventoryCountImports?.first?.inventoryCountImportId"/>
             
             <if condition="!inventoryCountImportId">
-                <service-call name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImport"
-                        in-map="context + [statusId: statusId ? statusId : 'INV_COUNT_CREATED']"
+                <service-call name="create#co.hotwax.warehouse.InventoryCountImport"
+                        in-map="context + [statusId: statusId ? statusId : 'INV_COUNT_CREATED', uploadedByUserLogin: ec.user.getUsername(), createdDate: ec.user.nowTimestamp]"
                         out-map="result"/>
                 <set field="inventoryCountImportId" from="result.inventoryCountImportId"/>
             </if>
