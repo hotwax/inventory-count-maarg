@@ -257,7 +257,7 @@
             <service-call name="create#co.hotwax.warehouse.InvCountImportVariance" in-map="inMap"/>
 
             <!-- Marking Item as accepted/completed. -->
-            <service-call name="co.hotwax.cycleCount.InventoryCountServices.update#InventoryCountImportItem" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:context.importItemSeqId, statusId:'INV_COUNT_COMPLETED']"/>
+            <service-call name="update#co.hotwax.warehouse.InventoryCountImportItem" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:context.importItemSeqId, statusId:'INV_COUNT_COMPLETED']"/>
             <return type="info" message="Inventory Count Import Item Approved."/>
         </actions>
     </service>
