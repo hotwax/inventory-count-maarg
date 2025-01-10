@@ -434,4 +434,21 @@
             <set field="csvData" from="ec.resource.getLocationReference(systemMessage.messageText).getText()"/>
         </actions>
     </service>
+
+    <service verb="send" noun="InventoryCountItemNotification">
+        <description>Send Inventory Count Notification</description>
+        <in-parameters>
+            <parameter name="inventoryCountImportId" required="true"/>
+            <parameter name="importItemSeqId" required="true"/>
+        </in-parameters>
+        <actions>
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportItemView" value-field="inventoryCountImport"/>
+            <if condition="inventoryCountImport.facilityId">
+                <script>
+                    ec.makeNotificationMessage().topic(inventoryCountImport.facilityId).type("info").title("Inventory Count Item Update")
+                    .message(inventoryCountImport).userGroupId("ADMIN").send()
+                </script>
+            </if>
+        </actions>
+    </service>
 </services>
