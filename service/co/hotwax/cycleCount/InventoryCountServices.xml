@@ -210,7 +210,7 @@
         </actions>
     </service>
 
-    <service verb="approve" noun="co.hotwax.warehouse.InventoryCountImportItem">
+    <service verb="approve" noun="InventoryCountImportItem">
         <in-parameters>
             <parameter name="inventoryCountImportId" required="true"/>
             <parameter name="importItemSeqId" required="true"/>
