@@ -73,7 +73,7 @@
                 </if>
 
                 <!--Get the accepted by user detail for the inventory count import item-->
-                <entity-find entity-name="InvCountImportStatus" list="itemStatusHistory">
+                <entity-find entity-name="co.hotwax.warehouse.InvCountImportStatus" list="itemStatusHistory">
                     <econdition field-name="inventoryCountImportId" from="invCountImpItem.inventoryCountImportId"/>
                     <econdition field-name="importItemSeqId" from="invCountImpItem.importItemSeqId"/>
                     <econdition field-name="statusId" value="INV_COUNT_COMPLETED" />
@@ -180,7 +180,7 @@
     <service verb="get" noun="InventoryCountImport">
         <in-parameters><parameter name="inventoryCountImportId" required="true"/></in-parameters>
         <out-parameters>
-            <auto-parameters entity-name="InventoryCountImportView"/>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportView"/>
             <parameter name="totalItems"/>
             <parameter name="itemCounted"/>
             <parameter name="rejectedCount"/>
@@ -188,11 +188,11 @@
             <parameter name="statusHistory"/>
         </out-parameters>
         <actions>
-            <entity-find-one entity-name="InventoryCountImportView" value-field="countImport"/>
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportView" value-field="countImport"/>
             <if condition="!countImport"><return/></if>
 
             <script>context.putAll(countImport)</script>
-            <entity-find entity-name="InventoryCountImportItem" list="itemList">
+            <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItem" list="itemList">
                 <econdition field-name="inventoryCountImportId"/>
             </entity-find>
             <set field="context.totalItems" from="(itemList?.size() ?:0)"/>
@@ -204,13 +204,13 @@
             </entity-find>
             <set field="context.totalVariance" from="(varianceList?.stream()?.map(it -> (it.varianceQuantityOnHand?:0.0))?.reduce(BigDecimal.ZERO, BigDecimal::add) ?:0)"/>
             
-            <entity-find entity-name="InvCountImportStatus" list="statusHistory">
+            <entity-find entity-name="co.hotwax.warehouse.InvCountImportStatus" list="statusHistory">
                 <econdition field-name="inventoryCountImportId"/>
             </entity-find>
         </actions>
     </service>
 
-    <service verb="approve" noun="InventoryCountImportItem">
+    <service verb="approve" noun="co.hotwax.warehouse.InventoryCountImportItem">
         <in-parameters>
             <parameter name="inventoryCountImportId" required="true"/>
             <parameter name="importItemSeqId" required="true"/>
@@ -221,7 +221,7 @@
             <parameter name="comments"/>
         </in-parameters>
         <actions>
-            <entity-find-one entity-name="InventoryCountImportItemView" value-field="invCountImpItem"/>
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportItemView" value-field="invCountImpItem"/>
 
             <set field="userName" from="ec.user.username" default-value="${System.getProperty('default.oms.user')}"/>
             <script>
