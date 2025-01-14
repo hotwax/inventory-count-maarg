@@ -146,6 +146,16 @@
                     <econdition field-name="statusId" value="INV_COUNT_COMPLETED" />
                 </entity-find>
                 <set field="itemDetail.acceptedByUserLoginId" from="itemStatusHistory?.first?.changeByUserLoginId"/>
+
+                <!-- fetch the Parent Product details -->
+                <entity-find entity-name="org.apache.ofbiz.product.product.ProductAssocAndFrom" list="parentProductDetails">
+                    <econdition field-name="productIdTo" from="inventoryItem.productId"/>
+                    <econdition field-name="productAssocTypeId" value="PRODUCT_VARIANT"/>
+                    <date-filter/>
+                </entity-find>
+                <set field="itemDetail.parentProductId" from="parentProductDetails?.first?.productId"/>
+                <set field="itemDetail.parentProductName" from="parentProductDetails?.first?.productName"/>
+                
                 <script>itemList.add(itemDetail)</script>
             </iterate>
         </actions>
