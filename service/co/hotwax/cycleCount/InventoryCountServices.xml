@@ -106,7 +106,7 @@
             <if condition="itemList == null || itemList.size() == 0"><return message="No Items Found"/></if>
             <iterate list="itemList" entry="item">
                 <if condition="item.productId">
-                    <entity-find-one entity-name="org.apache.ofbiz.product.product.Product" value-field="product">
+                    <entity-find-one entity-name="org.apache.ofbiz.product.product.Product" value-field="product" cache="true">
                         <field-map field-name="productId" from="item.productId"/>
                     </entity-find-one>
                     <if condition="!product">
