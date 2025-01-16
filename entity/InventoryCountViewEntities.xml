@@ -31,6 +31,7 @@ under the License.
         <member-entity entity-alias="ICIS" entity-name="co.hotwax.warehouse.InvCountImportStatus" join-from-alias="ICI" join-optional="true">
             <key-map field-name="inventoryCountImportId"/>
             <entity-condition>
+                <econdition field-name="importItemSeqId" value=""/>
                 <econdition field-name="statusId" value="INV_COUNT_COMPLETED"/>
             </entity-condition>
         </member-entity>
