@@ -89,6 +89,7 @@
             <parameter name="inventoryCountImportId"/>
             <parameter name="importItemSeqId"/>
             <parameter name="statusId"/>
+            <parameter name="facilityId"/>
             <parameter name="orderBy" default-value="-inventoryCountImportId, importItemSeqId"/>
             <parameter name="pageIndex" type="Integer" default-value="0">
                 <description>The current page index to get the inventory count import items.</description>
@@ -104,6 +105,7 @@
                 <econdition field-name="inventoryCountImportId" ignore-if-empty="true"/>
                 <econdition field-name="importItemSeqId" ignore-if-empty="true"/>
                 <econdition field-name="statusId" ignore-if-empty="true"/>
+                <econdition field-name="facilityId" ignore-if-empty="true"/>
             </entity-find>
             <set field="itemList" from="[]"/>
             <iterate list="invCountImpItemItr" entry="invCountImpItem">
