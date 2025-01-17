@@ -12,10 +12,16 @@
             <service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="context + [statusDate: ec.user.nowTimestamp]"/>
         </actions>
     </seca>
-    <seca id="UpdateInventoryCountImportItem" service="update#co.hotwax.warehouse.InventoryCountImportItem" when="post-service" run-on-error="false">
+    <seca id="UpdateInventoryCountImportItemStatus" service="update#co.hotwax.warehouse.InventoryCountImportItem" when="post-service" run-on-error="false">
         <condition><expression>statusChanged</expression></condition>
         <actions>
             <service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="context + [statusDate: ec.user.nowTimestamp]"/>
         </actions>
+    </seca>
+    <seca id="CreateInventoryCountImportItem" service="create#co.hotwax.warehouse.InventoryCountImportItem" when="post-service" run-on-error="false">
+        <actions><service-call name="co.hotwax.cycleCount.InventoryCountServices.send#InventoryCountItemNotification" in-map="context"/></actions>
+    </seca>
+    <seca id="UpdateInventoryCountImportItem" service="update#co.hotwax.warehouse.InventoryCountImportItem" when="post-service" run-on-error="false">
+        <actions><service-call name="co.hotwax.cycleCount.InventoryCountServices.send#InventoryCountItemNotification" in-map="context"/></actions>
     </seca>
 </secas>
