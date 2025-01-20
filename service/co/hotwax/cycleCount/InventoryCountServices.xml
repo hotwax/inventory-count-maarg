@@ -90,6 +90,7 @@
             <parameter name="importItemSeqId"/>
             <parameter name="statusId"/>
             <parameter name="facilityId" type="List"/>
+            <parameter name="computeQOH" default-value="Y"/>
             <parameter name="orderBy" default-value="-inventoryCountImportId, importItemSeqId"/>
             <parameter name="pageIndex" type="Integer" default-value="0">
                 <description>The current page index to get the inventory count import items.</description>
@@ -118,6 +119,7 @@
                 <if condition="countImportVariance">
                     <set field="qtyOnHand" from="countImportVariance.systemQuantityOnHand" default-value="0"/>
                     <else>
+                        <if condition="computeQOH == 'Y'">
                         <entity-find entity-name="org.apache.ofbiz.product.inventory.InventoryItem" list="inventoryItems">
                             <econdition field-name="productId" from="invCountImpItem.productId"/>
                             <econdition field-name="facilityId" from="invCountImpItem.facilityId"/>
@@ -125,6 +127,7 @@
                         <iterate list="inventoryItems" entry="inventoryItem">
                             <set field="qtyOnHand" from="qtyOnHand + (inventoryItem.quantityOnHandTotal ?:0)" type="BigDecimal"/>
                         </iterate>
+                        </if>
                     </else>
                 </if>
                 <set field="itemDetail.qoh" from="qtyOnHand" default-value="0"/>
