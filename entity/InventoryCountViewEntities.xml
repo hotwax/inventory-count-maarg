@@ -72,4 +72,10 @@ under the License.
         <alias name="countedByLastName" field="lastName" entity-alias="PER"/>
         <alias name="countedByGroupName" field="groupName" entity-alias="PG"/>
     </view-entity>
+    <view-entity entity-name="InventoryItemSum" package="co.hotwax.warehouse">
+        <member-entity entity-alias="II" entity-name="org.apache.ofbiz.product.inventory.InventoryItem"/>
+        <alias name="productId" entity-alias="II"/>
+        <alias name="facilityId" entity-alias="II"/>
+        <alias name="qoh" field="quantityOnHandTotal" entity-alias="II" function="sum"/>
+    </view-entity>
 </entities>
