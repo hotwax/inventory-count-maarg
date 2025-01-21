@@ -88,11 +88,10 @@
                 <set field="itemDetail.acceptedByUserLoginId" from="itemStatusHistory?.first?.changeByUserLoginId"/>
 
                 <!-- fetch the Parent Product details -->
-                <entity-find entity-name="org.apache.ofbiz.product.product.ProductAssocAndFrom" list="parentProductDetails">
+                <entity-find entity-name="org.apache.ofbiz.product.product.ProductAssocAndFrom" list="parentProductDetails" cache="true">
                     <econdition field-name="productIdTo" from="invCountImpItem.productId"/>
                     <econdition field-name="productAssocTypeId" value="PRODUCT_VARIANT"/>
                     <date-filter/>
-                    <select-field field-name="productId,productName"/>
                 </entity-find>
                 <set field="itemDetail.parentProductId" from="parentProductDetails?.first?.productId"/>
                 <set field="itemDetail.parentProductName" from="parentProductDetails?.first?.productName"/>
