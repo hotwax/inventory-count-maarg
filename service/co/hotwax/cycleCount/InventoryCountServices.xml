@@ -123,6 +123,7 @@
                         <entity-find entity-name="org.apache.ofbiz.product.inventory.InventoryItem" list="inventoryItems">
                             <econdition field-name="productId" from="invCountImpItem.productId"/>
                             <econdition field-name="facilityId" from="invCountImpItem.facilityId"/>
+                            <use-iterator/>
                         </entity-find>
                         <iterate list="inventoryItems" entry="inventoryItem">
                             <set field="qtyOnHand" from="qtyOnHand + (inventoryItem.quantityOnHandTotal ?:0)" type="BigDecimal"/>
@@ -133,11 +134,12 @@
                 <set field="itemDetail.qoh" from="qtyOnHand" default-value="0"/>
 
                 <!--Last count sync date-->
-                <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItemView" list="lastCountedItems">
+                <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItemView" list="lastCountedItems" limit="1">
                     <econdition field-name="productId" from="invCountImpItem.productId"/>
                     <econdition field-name="facilityId" from="invCountImpItem.facilityId"/>
                     <econdition field-name="statusId" value="INV_COUNT_COMPLETED"/>
                     <econdition field-name="inventoryCountImportId" operator="not-equals" from="inventoryCountImportId"/>
+                    <select-field field-name="createdDate"/>
                     <order-by field-name="-createdDate"/>
                 </entity-find>
                 <if condition="lastCountedItems &amp;&amp; lastCountedItems.size() > 0">
@@ -145,10 +147,11 @@
                 </if>
 
                 <!--Get the accepted by user detail for the inventory count import item-->
-                <entity-find entity-name="InvCountImportStatus" list="itemStatusHistory">
+                <entity-find entity-name="co.hotwax.warehouse.InvCountImportStatus" list="itemStatusHistory" limit="1">
                     <econdition field-name="inventoryCountImportId" from="invCountImpItem.inventoryCountImportId"/>
                     <econdition field-name="importItemSeqId" from="invCountImpItem.importItemSeqId"/>
                     <econdition field-name="statusId" value="INV_COUNT_COMPLETED" />
+                    <select-field field-name="changeByUserLoginId"/>
                 </entity-find>
                 <set field="itemDetail.acceptedByUserLoginId" from="itemStatusHistory?.first?.changeByUserLoginId"/>
 
@@ -157,6 +160,7 @@
                     <econdition field-name="productIdTo" from="invCountImpItem.productId"/>
                     <econdition field-name="productAssocTypeId" value="PRODUCT_VARIANT"/>
                     <date-filter/>
+                    <select-field field-name="productId,productName"/>
                 </entity-find>
                 <set field="itemDetail.parentProductId" from="parentProductDetails?.first?.productId"/>
                 <set field="itemDetail.parentProductName" from="parentProductDetails?.first?.productName"/>
