@@ -63,10 +63,15 @@ under the License.
         <alias-all entity-alias="ICII">
             <exclude field="inventoryCountImportId"/>
             <exclude field="statusId"/>
+            <exclude field="createdDate"/>
         </alias-all>
         <alias-all entity-alias="ICIV">
             <exclude field="invCountImportItemSeqId"/>
+            <exclude field="productId"/>
+            <exclude field="productIdentifier"/>
+            <exclude field="locationSeqId"/>
         </alias-all>
+        <alias name="itemCreatedDate" field="createdDate" entity-alias="ICII"/>
         <alias name="itemStatusId" field="statusId" entity-alias="ICII"/>
         <alias name="countedByFirstName" field="firstName" entity-alias="PER"/>
         <alias name="countedByLastName" field="lastName" entity-alias="PER"/>
