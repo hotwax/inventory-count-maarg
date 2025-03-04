@@ -7,14 +7,14 @@
         <method type="post"><service name="co.hotwax.common.UserServices.login#User"/></method>
     </resource>
     <resource name="user">
-        <resource name="profile">
-            <method type="get"><service name="co.hotwax.common.UserServices.getUserProfile"/></method>
-        </resource>
         <id name="partyId">
             <resource name="facilities">
                 <method type="get"><entity name="org.apache.ofbiz.product.facility.FacilityParty" operation="list"/></method>
             </resource>
         </id>
+        <resource name="profile">
+            <method type="get"><service name="co.hotwax.common.UserServices.getUserProfile"/></method>
+        </resource>
     </resource>
     <resource name="productStores">
         <id name="productStoreId">
@@ -50,19 +50,6 @@
     <resource name="cycleCounts">
         <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportView" operation="list"/></method>
         <method type="post"><entity name="co.hotwax.warehouse.InventoryCountImport" operation="create"/></method>
-        <resource name="bulk">
-            <method type="post">
-                <service name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImports"/>
-            </method>
-        </resource>
-
-        <!-- Inventory Cycle Count API:
-            ** GET /inventory-cycle-count/cycleCounts/items - Get all inventory cycle count items. This is useful for preparing cycle count and detailed CSV file.
-            TODO: Need to prepare a generic endpoint that can return csv data
-        -->
-        <resource name="items">
-            <method type="get"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImportItemDetails"/></method>
-        </resource>
 
         <!-- Inventory Cycle Count API:
             ** GET /inventory-cycle-count/cycleCounts/{inventoryCountImportId} - get inventory cycle count import
@@ -113,6 +100,19 @@
                 <method type="get"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImport"/></method>
             </resource>
         </id>
+        <resource name="bulk">
+            <method type="post">
+                <service name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImports"/>
+            </method>
+        </resource>
+
+        <!-- Inventory Cycle Count API:
+            ** GET /inventory-cycle-count/cycleCounts/items - Get all inventory cycle count items. This is useful for preparing cycle count and detailed CSV file.
+            TODO: Need to prepare a generic endpoint that can return csv data
+        -->
+        <resource name="items">
+            <method type="get"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImportItemDetails"/></method>
+        </resource>
         <!-- Inventory Cycle Count API:
             ** GET /inventory-cycle-count/cycleCounts/count - get inventory cycle count import count
          -->

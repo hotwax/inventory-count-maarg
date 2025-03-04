@@ -22,6 +22,8 @@
             <parameter name="inventoryCountImportId"/>
             <parameter name="importItemSeqId"/>
             <parameter name="statusId"/>
+            <parameter name="facilityId" type="List"/>
+            <parameter name="computeQOH" default-value="Y"/>
             <parameter name="orderBy" default-value="-inventoryCountImportId, importItemSeqId"/>
             <parameter name="pageIndex" type="Integer" default-value="0">
                 <description>The current page index to get the inventory count import items.</description>
@@ -37,6 +39,7 @@
                 <econdition field-name="inventoryCountImportId" ignore-if-empty="true"/>
                 <econdition field-name="importItemSeqId" ignore-if-empty="true"/>
                 <econdition field-name="statusId" ignore-if-empty="true"/>
+                <econdition field-name="facilityId" operator="in" from="facilityId" ignore-if-empty="true"/>
             </entity-find>
             <set field="itemList" from="[]"/>
             <iterate list="invCountImpItemItr" entry="invCountImpItem">
@@ -49,23 +52,26 @@
                 <if condition="countImportVariance">
                     <set field="qtyOnHand" from="countImportVariance.systemQuantityOnHand" default-value="0"/>
                     <else>
-                        <entity-find entity-name="org.apache.ofbiz.product.inventory.InventoryItem" list="inventoryItems">
+                        <if condition="computeQOH == 'Y'">
+                        <entity-find entity-name="co.hotwax.warehouse.InventoryItemSum" list="itemSummary">
                             <econdition field-name="productId" from="invCountImpItem.productId"/>
                             <econdition field-name="facilityId" from="invCountImpItem.facilityId"/>
                         </entity-find>
-                        <iterate list="inventoryItems" entry="inventoryItem">
-                            <set field="qtyOnHand" from="qtyOnHand + (inventoryItem.quantityOnHandTotal ?:0)" type="BigDecimal"/>
-                        </iterate>
+                        <if condition="itemSummary">
+                            <set field="qtyOnHand" from="itemSummary?.first?.qoh"/>
+                        </if>
+                        </if>
                     </else>
                 </if>
-                <set field="itemDetail.qoh" from="qtyOnHand" default-value="0"/>
+                <set field="itemDetail.qoh" from="qtyOnHand"/>
 
                 <!--Last count sync date-->
-                <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItemView" list="lastCountedItems">
+                <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItemView" list="lastCountedItems" limit="1">
                     <econdition field-name="productId" from="invCountImpItem.productId"/>
                     <econdition field-name="facilityId" from="invCountImpItem.facilityId"/>
                     <econdition field-name="statusId" value="INV_COUNT_COMPLETED"/>
                     <econdition field-name="inventoryCountImportId" operator="not-equals" from="inventoryCountImportId"/>
+                    <select-field field-name="createdDate"/>
                     <order-by field-name="-createdDate"/>
                 </entity-find>
                 <if condition="lastCountedItems &amp;&amp; lastCountedItems.size() > 0">
@@ -73,12 +79,23 @@
                 </if>
 
                 <!--Get the accepted by user detail for the inventory count import item-->
-                <entity-find entity-name="co.hotwax.warehouse.InvCountImportStatus" list="itemStatusHistory">
+                <entity-find entity-name="co.hotwax.warehouse.InvCountImportStatus" list="itemStatusHistory" limit="1">
                     <econdition field-name="inventoryCountImportId" from="invCountImpItem.inventoryCountImportId"/>
                     <econdition field-name="importItemSeqId" from="invCountImpItem.importItemSeqId"/>
                     <econdition field-name="statusId" value="INV_COUNT_COMPLETED" />
+                    <select-field field-name="changeByUserLoginId"/>
                 </entity-find>
                 <set field="itemDetail.acceptedByUserLoginId" from="itemStatusHistory?.first?.changeByUserLoginId"/>
+
+                <!-- fetch the Parent Product details -->
+                <entity-find entity-name="org.apache.ofbiz.product.product.ProductAssocAndFrom" list="parentProductDetails" cache="true">
+                    <econdition field-name="productIdTo" from="invCountImpItem.productId"/>
+                    <econdition field-name="productAssocTypeId" value="PRODUCT_VARIANT"/>
+                    <date-filter/>
+                </entity-find>
+                <set field="itemDetail.parentProductId" from="parentProductDetails?.first?.productId"/>
+                <set field="itemDetail.parentProductName" from="parentProductDetails?.first?.productName"/>
+                
                 <script>itemList.add(itemDetail)</script>
             </iterate>
         </actions>
@@ -95,18 +112,34 @@
         <actions>
             <if condition="itemList == null || itemList.size() == 0"><return message="No Items Found"/></if>
             <iterate list="itemList" entry="item">
-                <if condition="item.idType">
+                <if condition="item.productId">
+                    <entity-find-one entity-name="org.apache.ofbiz.product.product.Product" value-field="product" cache="true">
+                        <field-map field-name="productId" from="item.productId"/>
+                    </entity-find-one>
+                    <if condition="!product">
+                        <return error="true" message="Invalid product #${item.productId}"/>
+                    </if>
+                </if>
+                <if condition="!item.productId &amp;&amp; item.idType &amp;&amp; item.idValue">
                     <entity-find entity-name="org.apache.ofbiz.product.product.GoodIdentification" list="goodIdentifications">
                         <econdition field-name="goodIdentificationTypeId" from="item.idType"/>
                         <econdition field-name="idValue" from="item.idValue"/>
                         <date-filter/>
                         <order-by field-name="fromDate"/>
                     </entity-find>
-                    <if condition="goodIdentifications"><set field="item.idValue" from="goodIdentifications[0].productId"/></if>
+                    <if condition="goodIdentifications">
+                        <set field="item.productId" from="goodIdentifications[0].productId"/>
+                        <else>
+                            <return error="true" message="No product found with idType ${item.idType} and idValue ${item.idValue}."/>
+                        </else>
+                    </if>
+                </if>
+                <if condition="!item.productId">
+                    <return error="true" message="Missing product ID."/>
                 </if>
 
-                <if condition="item.idValue">
-                    <set field="item.productId" from="item.idValue"/>
+                <if condition="item.productId">
+                    <set field="item.productId" from="item.productId"/>
                     <set field="item.inventoryCountImportId" from="context.inventoryCountImportId"/>
                     <!-- Not checking if idValue is already added. One can just reject duplicate records if added multiple times. -->
                     <set field="item.createdDate" from="ec.user.nowTimestamp"/>
