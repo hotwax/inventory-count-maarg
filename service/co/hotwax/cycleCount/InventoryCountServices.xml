@@ -467,4 +467,53 @@
             <set field="csvData" from="ec.resource.getLocationReference(systemMessage.messageText).getText()"/>
         </actions>
     </service>
+    
+    <service verb="findOrCreate" noun="RejectedItemCycleCount">
+        <in-parameters>
+            <parameter name="productId" required="true"/>
+            <parameter name="facilityId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="inventoryCountImportItem" type="Map"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="InventoryCountImport" value-field="inventoryCount">
+                <field-map field-name="countTypeEnumId" value="REJ_ITEM_COUNT"/>
+                <field-map field-name="statusId" value="INV_COUNT_CREATED"/>
+                <field-map field-name="facilityId" from="facilityId"/>
+            </entity-find-one>
+            <if condition="!inventoryCount">
+                <service-call name="create#co.hotwax.warehouse.InventoryCountImport"
+                              in-map="[countImportName: 'Rejected Item Count',
+                              countTypeEnumId : 'REJ_ITEM_COUNT',
+                              facilityId : facilityId,
+                              statusId : 'INV_COUNT_CREATED',
+                              uploadedByUserLogin: ec.user.getUsername(),
+                              createdDate: ec.user.nowTimestamp]"
+                              out-map="result"
+                />
+                <set field="inventoryCountImportId" from="result.inventoryCountImportId"/>
+                <else>
+                    <set field="inventoryCountImportId" from="inventoryCount.inventoryCountImportId"/>
+                    <entity-find-one entity-name="InventoryCountImportItem" value-field="inventoryCountItem">
+                        <field-map field-name="inventoryCountImportId" from="inventoryCountImportId"/>
+                        <field-map field-name="productId" from="productId"/>
+                    </entity-find-one>
+                    <if condition="inventoryCountItem">
+                        <set field="inventoryCountImportItem" from="inventoryCountItem"/>
+                        <return/>
+                    </if>
+                </else>
+            </if>
+            <service-call name="create#co.hotwax.warehouse.InventoryCountImportItem"
+                          in-map="[inventoryCountImportId : inventoryCountImportId,
+                          statusId : 'INV_COUNT_CREATED',
+                          productId : productId,
+                          uploadedByUserLogin: ec.user.getUsername(),
+                          createdDate: ec.user.nowTimestamp]"
+                          out-map="resultItem"
+            />
+            <set field="inventoryCountImportItem" from="resultItem"/>
+        </actions>
+    </service>
 </services>

@@ -50,6 +50,11 @@
     <resource name="cycleCounts">
         <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportView" operation="list"/></method>
         <method type="post"><entity name="co.hotwax.warehouse.InventoryCountImport" operation="create"/></method>
+        <resource name="rejectedItemsCycleCount">
+            <method type="post">
+                <service name="co.hotwax.cycleCount.InventoryCountServices.findOrCreate#RejectedItemCycleCount"/>
+            </method>
+        </resource>
         <resource name="bulk">
             <method type="post">
                 <service name="co.hotwax.cycleCount.InventoryCountServices.create#InventoryCountImports"/>
