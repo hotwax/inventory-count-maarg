@@ -243,7 +243,7 @@
         </actions>
     </service>
 
-    <service verb="approve" noun="InventoryCountImportItem">
+    <service verb="accept" noun="InventoryCountImportItem">
         <in-parameters>
             <parameter name="inventoryCountImportId" required="true"/>
             <parameter name="importItemSeqId" required="true"/>
@@ -291,7 +291,7 @@
 
             <!-- Marking Item as accepted/completed. -->
             <service-call name="update#co.hotwax.warehouse.InventoryCountImportItem" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:context.importItemSeqId, statusId:'INV_COUNT_COMPLETED']"/>
-            <return type="info" message="Inventory Count Import Item Approved."/>
+            <return type="info" message="Inventory Count Import Item Accepte."/>
         </actions>
     </service>
     <service verb="run" noun="RecordCycleCount" type="remote-rest" location="${omsBaseUrl}/api/service/recordInventoryCount?token=${token}" method="post">
