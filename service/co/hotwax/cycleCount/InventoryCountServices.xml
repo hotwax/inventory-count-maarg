@@ -243,7 +243,7 @@
         </actions>
     </service>
 
-    <service verb="approve" noun="InventoryCountImportItem">
+    <service verb="accept" noun="InventoryCountImportItem">
         <in-parameters>
             <parameter name="inventoryCountImportId" required="true"/>
             <parameter name="importItemSeqId" required="true"/>
@@ -291,7 +291,7 @@
 
             <!-- Marking Item as accepted/completed. -->
             <service-call name="update#co.hotwax.warehouse.InventoryCountImportItem" in-map="[inventoryCountImportId:context.inventoryCountImportId, importItemSeqId:context.importItemSeqId, statusId:'INV_COUNT_COMPLETED']"/>
-            <return type="info" message="Inventory Count Import Item Approved."/>
+            <return type="info" message="Inventory Count Import Item Accepted."/>
         </actions>
     </service>
     <service verb="run" noun="RecordCycleCount" type="remote-rest" location="${omsBaseUrl}/api/service/recordInventoryCount?token=${token}" method="post">
@@ -516,4 +516,37 @@
             <set field="inventoryCountImportItem" from="resultItem"/>
         </actions>
     </service>
+
+    <service verb="approve" noun="InventoryCountImport">
+        <in-parameters>
+            <parameter name="enumId" required="false"/>
+            <parameter name="productStoreId" required="false"/>
+        </in-parameters>
+        <actions>
+            <entity-find entity-name="InventoryCountImportAndProductStoreFacility" list="inventoryCounts">
+                <econdition field-name="countTypeEnumId" from="enumId" ignore-if-empty="true"/>
+                <econdition field-name="statusId" value="INV_COUNT_CREATED"/>
+                <econdition field-name="productStoreId" from="productStoreId" ignore-if-empty="true"/>
+            </entity-find>
+            <if condition="inventoryCounts == null || inventoryCounts.size() == 0"><return message="No inventory counts found"/></if>
+            <iterate list="inventoryCounts" entry="inventoryCount">
+                <set field="inventoryCount.statusId" value="INV_COUNT_ASSIGNED"/>
+                <service-call name="update#co.hotwax.warehouse.InventoryCountImport"
+                              in-map="inventoryCountImportId:inventoryCount.inventoryCountImportId,
+                              statusId:inventoryCount.statusId"/>
+                <entity-find entity-name="InventoryCountImportItem" list="inventoryCountItems">
+                    <econdition field-name="inventoryCountImportId" from="inventoryCount.inventoryCountImportId"/>
+                </entity-find>
+                <iterate list="inventoryCountItems" entry="inventoryCountItem">
+                    <set field="inventoryCountItem.statusId" value="INV_COUNT_ASSIGNED"/>
+                    <service-call name="update#co.hotwax.warehouse.InventoryCountImportItem"
+                                  in-map="inventoryCountImportId:inventoryCountItem.inventoryCountImportId,
+                                  importItemSeqId:inventoryCountItem.importItemSeqId,
+                                  statusId:inventoryCountItem.statusId"/>
+                </iterate>
+            </iterate>
+        </actions>
+
+    </service>
+
 </services>
