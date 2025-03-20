@@ -519,12 +519,12 @@
 
     <service verb="approve" noun="InventoryCountImport">
         <in-parameters>
-            <parameter name="enumId" required="false"/>
+            <parameter name="countTypeEnumId" required="false"/>
             <parameter name="productStoreId" required="false"/>
         </in-parameters>
         <actions>
             <entity-find entity-name="InventoryCountImportAndProductStoreFacility" list="inventoryCounts">
-                <econdition field-name="countTypeEnumId" from="enumId" ignore-if-empty="true"/>
+                <econdition field-name="countTypeEnumId" from="countTypeEnumId" ignore-if-empty="true"/>
                 <econdition field-name="statusId" value="INV_COUNT_CREATED"/>
                 <econdition field-name="productStoreId" from="productStoreId" ignore-if-empty="true"/>
             </entity-find>
@@ -546,7 +546,6 @@
                 </iterate>
             </iterate>
         </actions>
-
     </service>
 
 </services>
