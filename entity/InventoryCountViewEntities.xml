@@ -84,53 +84,6 @@ under the License.
         <alias name="qoh" field="quantityOnHandTotal" entity-alias="II" function="sum"/>
     </view-entity>
 
-    <extend-entity entity-name="ProductFacility" package="org.apache.ofbiz.product.facility">
-        <field name="cycleCountThreshold" type="number-decimal" default="2"/>
-    </extend-entity>
-
-    <view-entity entity-name="LastInventoryReset" package="co.hotwax.warehouse">
-        <member-entity entity-alias="iid" entity-name="InventoryItemDetail">
-            <entity-condition>
-                <econdition field-name="reasonEnumId" value="VAR_EXT_RESET"/>
-                <econdition field-name="reasonEnumId" value="CYCLE_COUNT"/>
-            </entity-condition>
-        </member-entity>
-        <alias name="inventoryItemId" entity-alias="iid"/>
-        <alias name="effectiveDate" entity-alias="iid" function="max"/>
-
-    </view-entity>
-    
-    <view-entity entity-name="RejectedItemsCycleCountView" package="co.hotwax.warehouse">
-        <member-entity entity-alias="IID" entity-name="org.apache.ofbiz.product.inventory.InventoryItemDetail"/>
-        <member-entity entity-alias="LIR" entity-name="co.hotwax.warehouse.LastInventoryReset" join-from-alias="IID">
-            <key-map field-name="inventoryItemId"/>
-            <entity-condition>
-                <econdition entity-alias="IID" field-name="effectiveDate" operator="greater-equals" to-field-name="effectiveDate"/>
-            </entity-condition>
-        </member-entity>
-        <member-entity entity-alias="VR" entity-name="org.apache.ofbiz.product.inventory.VarianceReason">
-            <key-map field-name="reasonEnumId" related="varianceReasonId"/>
-            <entity-condition>
-                <econdition field-name="varianceReasonId" operator="not-equals" value="POS_SALE"/>
-            </entity-condition>
-        </member-entity>
-        <member-entity entity-alias="PF" entity-name="org.apache.ofbiz.product.facility.ProductFacility" join-from-alias="IID">
-            <key-map field-name="inventoryItemId"/>
-        </member-entity>
-        <alias name="inventoryItemId" entity-alias="IID"/>
-        <alias name="facilityId" entity-alias="PF"/>
-        <alias name="productId" entity-alias="PF"/>
-        <alias name="cycleCountThreshold" entity-alias="PF"/>
-        <alias name="availableToPromiseTotal" field="availableToPromiseDiff" entity-alias="IID" function="sum"/>
-        <entity-condition>
-            <having-econditions>
-                <econdition field-name="availableToPromiseTotal"
-                            operator="greater-equals"
-                            to-field-name="cycleCountThreshold" to-entity-alias="PF"/>
-            </having-econditions>
-        </entity-condition>
-    </view-entity>
-
     <view-entity entity-name="InventoryCountImportAndProductStoreFacility" package="co.hotwax.warehouse">
         <member-entity entity-alias="ICI" entity-name="InventoryCountImport"/>
         <member-entity entity-alias="PSF" entity-name="ProductStoreFacility" join-from-alias="ICI">
