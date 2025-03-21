@@ -468,18 +468,24 @@
         </actions>
     </service>
 
-    <service verb="send" noun="InventoryCountItemNotification">
+    <service verb="send" noun="InventoryCountNotification" authenticate="anonymous-all">
         <description>Send Inventory Count Notification</description>
-        <in-parameters>
-            <parameter name="inventoryCountImportId" required="true"/>
-            <parameter name="importItemSeqId" required="true"/>
-        </in-parameters>
+        <implements service="org.moqui.EntityServices.receive#DataFeed"/>
         <actions>
-            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportItemView" value-field="inventoryCountImport"/>
-            <if condition="inventoryCountImport.facilityId">
+            <set field="updatedData" from="documentList[0]"/>
+            <if condition="!updatedData.facilityId">
+                <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImport" value-field="inventoryCountImport" cache="true">
+                    <field-map field-name="inventoryCountImportId" from="updatedData.inventoryCountImportId"/>
+                </entity-find-one>
+                <if condition="inventoryCountImport">
+                    <set field="updatedData.facilityId" from="inventoryCountImport.facilityId"/>
+                </if>
+            </if>
+
+            <if condition="updatedData.facilityId">
                 <script>
-                    ec.makeNotificationMessage().topic(inventoryCountImport.facilityId).type("info").title("Inventory Count Item Update")
-                    .message(inventoryCountImport).userGroupId("ADMIN").send()
+                    ec.makeNotificationMessage().topic(updatedData.facilityId).type("info").title("Inventory Count Update")
+                    .message(updatedData).send()
                 </script>
             </if>
         </actions>

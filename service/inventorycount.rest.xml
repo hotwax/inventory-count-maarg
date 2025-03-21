@@ -42,6 +42,18 @@
             <method type="delete"><entity name="co.hotwax.datamanager.DataManagerMapping" operation="delete"/></method>
         </id>
     </resource>
+    <resource name="notificationTopics">
+        <method type="post"><entity name="moqui.security.user.NotificationTopic" operation="create"/></method>
+        <id name="topic">
+            <method type="delete"><entity name="moqui.security.user.NotificationTopic" operation="delete"/></method>
+            <resource name="users">
+                <method type="post"><entity name="moqui.security.user.NotificationTopicUser" operation="create"/></method>
+                <id name="userId">
+                    <method type="delete"><entity name="moqui.security.user.NotificationTopicUser" operation="delete"/></method>
+                </id>
+            </resource>
+        </id>
+    </resource>
 
     <!-- Inventory Cycle Count API:
         ** GET /inventory-cycle-count/cycleCounts - get all inventory cycle count import, use filters like status, facility, createdDate

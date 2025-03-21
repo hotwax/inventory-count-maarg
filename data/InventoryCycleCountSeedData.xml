@@ -7,6 +7,28 @@
              consumeServiceName="co.hotwax.cycleCount.InventoryCountServices.consume#InventoryCountImportCsv"
              receivePath="${contentRoot}/hotwax/inventory-count/${fileName}_${dateTime}.csv"/>
 
+    <!-- Data feeds for cycle count websocket notifications-->
+    <dataDocuments dataDocumentId="InventoryCountImport" documentName="Inventory Count Import"
+                   primaryEntityName="co.hotwax.warehouse.InventoryCountImport" documentTitle="Inventory Count Import Template">
+        <fields fieldSeqId="01" fieldPath="inventoryCountImportId"/>
+        <fields fieldSeqId="02" fieldPath="statusId"/>
+        <fields fieldSeqId="02" fieldPath="facilityId"/>
+    </dataDocuments>
+    <dataDocuments dataDocumentId="InventoryCountImportItem" documentName="Inventory Count Import Item"
+                   primaryEntityName="co.hotwax.warehouse.InventoryCountImportItem" documentTitle="Inventory Count Import Item Template">
+        <fields fieldSeqId="01" fieldPath="inventoryCountImportId"/>
+        <fields fieldSeqId="02" fieldPath="importItemSeqId"/>
+        <fields fieldSeqId="03" fieldPath="quantity"/>
+    </dataDocuments>
+    <moqui.entity.feed.DataFeed dataFeedId="InventoryCountUpdate" dataFeedTypeEnumId="DTFDTP_RT_PUSH" indexOnStartEmpty="Y"
+                                feedName="Inventory Count Update" feedReceiveServiceName="co.hotwax.cycleCount.InventoryCountServices.send#InventoryCountNotification">
+        <documents dataDocumentId="InventoryCountImport"/>
+    </moqui.entity.feed.DataFeed>
+    <moqui.entity.feed.DataFeed dataFeedId="InventoryCountItemUpdate" dataFeedTypeEnumId="DTFDTP_RT_PUSH" indexOnStartEmpty="Y"
+                                feedName="Inventory Count Item Update" feedReceiveServiceName="co.hotwax.cycleCount.InventoryCountServices.send#InventoryCountNotification">
+        <documents dataDocumentId="InventoryCountImportItem"/>
+    </moqui.entity.feed.DataFeed>
+
     <artifactGroups artifactGroupId="ICC_API" description="Directed Inventory Cycle Count API (via root resource)">
         <artifacts artifactTypeEnumId="AT_REST_PATH" inheritAuthz="Y" artifactName="/inventory-cycle-count"/>
         <!-- Full permissions for the ADMIN user group -->
