@@ -12,7 +12,7 @@
                    primaryEntityName="co.hotwax.warehouse.InventoryCountImport" documentTitle="Inventory Count Import Template">
         <fields fieldSeqId="01" fieldPath="inventoryCountImportId"/>
         <fields fieldSeqId="02" fieldPath="statusId"/>
-        <fields fieldSeqId="02" fieldPath="facilityId"/>
+        <fields fieldSeqId="03" fieldPath="facilityId"/>
     </dataDocuments>
     <dataDocuments dataDocumentId="InventoryCountImportItem" documentName="Inventory Count Import Item"
                    primaryEntityName="co.hotwax.warehouse.InventoryCountImportItem" documentTitle="Inventory Count Import Item Template">
