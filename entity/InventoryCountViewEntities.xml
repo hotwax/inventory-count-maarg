@@ -84,7 +84,7 @@ under the License.
         <alias name="qoh" field="quantityOnHandTotal" entity-alias="II" function="sum"/>
     </view-entity>
 
-    <view-entity entity-name="InventoryCountImportAndProductStoreFacility" package="co.hotwax.warehouse">
+    <view-entity entity-name="FacilityInventoryCountImportView" package="co.hotwax.warehouse">
         <member-entity entity-alias="ICI" entity-name="InventoryCountImport"/>
         <member-entity entity-alias="PSF" entity-name="ProductStoreFacility" join-from-alias="ICI">
             <key-map field-name="facilityId"/>

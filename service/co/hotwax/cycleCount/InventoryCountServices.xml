@@ -495,12 +495,13 @@
                 <set field="inventoryCountImportId" from="result.inventoryCountImportId"/>
                 <else>
                     <set field="inventoryCountImportId" from="inventoryCount.inventoryCountImportId"/>
-                    <entity-find-one entity-name="InventoryCountImportItem" value-field="inventoryCountItem">
-                        <field-map field-name="inventoryCountImportId" from="inventoryCountImportId"/>
-                        <field-map field-name="productId" from="productId"/>
-                    </entity-find-one>
-                    <if condition="inventoryCountItem">
-                        <set field="inventoryCountImportItem" from="inventoryCountItem"/>
+                    <entity-find entity-name="InventoryCountImportItem"
+                                 list="inventoryCountItems">
+                        <econdition field-name="inventoryCountImportId" from="inventoryCountImportId"/>
+                        <econdition field-name="productId" from="productId"/>
+                    </entity-find>
+                    <if condition="inventoryCountItems">
+                        <set field="inventoryCountImportItem" from="inventoryCountItems?.first"/>
                         <return/>
                     </if>
                 </else>
@@ -523,7 +524,7 @@
             <parameter name="productStoreId" required="false"/>
         </in-parameters>
         <actions>
-            <entity-find entity-name="InventoryCountImportAndProductStoreFacility" list="inventoryCounts">
+            <entity-find entity-name="FacilityInventoryCountImportView" list="inventoryCounts">
                 <econdition field-name="countTypeEnumId" from="countTypeEnumId" ignore-if-empty="true"/>
                 <econdition field-name="statusId" value="INV_COUNT_CREATED"/>
                 <econdition field-name="productStoreId" from="productStoreId" ignore-if-empty="true"/>

@@ -50,7 +50,7 @@
     <resource name="cycleCounts">
         <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportView" operation="list"/></method>
         <method type="post"><entity name="co.hotwax.warehouse.InventoryCountImport" operation="create"/></method>
-        <resource name="rejectedItemsCycleCount">
+        <resource name="rejectedItems">
             <method type="post">
                 <service name="co.hotwax.cycleCount.InventoryCountServices.findOrCreate#RejectedItemCycleCount"/>
             </method>
@@ -89,9 +89,9 @@
                     <method type="put"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="update"/></method>
                     <method type="delete"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="delete"/></method>
 
-                    <resource name="approve">
+                    <resource name="accept">
                         <method type="post">
-                            <service name="co.hotwax.cycleCount.InventoryCountServices.approve#InventoryCountImportItem"/>
+                            <service name="co.hotwax.cycleCount.InventoryCountServices.accept#InventoryCountImportItem"/>
                         </method>
                     </resource>
                 </id>
