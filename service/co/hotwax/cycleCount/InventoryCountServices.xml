@@ -382,20 +382,21 @@
                 <set field="facilityId" from="facilities?.first?.facilityId"/>
             </if>
 
-            <if condition="statusId != null">
-                <set field="allowedStatusIds" from="statusId"/>
+            <if condition="!statusId || (statusId == 'INV_COUNT_ASSIGNED' &amp;&amp; !facilityId)">
+                <set field="statusId" value="INV_COUNT_CREATED"/>
             </if>
+
             <entity-find entity-name="co.hotwax.warehouse.InventoryCountImport" list="inventoryCountImports">
                 <econdition field-name="countImportName"/>
                 <econdition field-name="facilityId" or-null="true"/>
                 <!--Allowing addition of items in the existing cycle count in draft or assigned status only-->
-                <econdition field-name="statusId" operator="in" from="allowedStatusIds"/>
+                <econdition field-name="statusId" from="statusId" ignore-if-empty="true"/>
             </entity-find>
             <set field="inventoryCountImportId" from="inventoryCountImports?.first?.inventoryCountImportId"/>
             
             <if condition="!inventoryCountImportId">
                 <service-call name="create#co.hotwax.warehouse.InventoryCountImport"
-                        in-map="context + [statusId: statusId ? statusId : 'INV_COUNT_CREATED', uploadedByUserLogin: ec.user.getUsername(), createdDate: ec.user.nowTimestamp]"
+                        in-map="context + [statusId: statusId, uploadedByUserLogin: ec.user.getUsername(), createdDate: ec.user.nowTimestamp]"
                         out-map="result"/>
                 <set field="inventoryCountImportId" from="result.inventoryCountImportId"/>
             </if>
