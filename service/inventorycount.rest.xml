@@ -117,7 +117,7 @@
             ** GET /inventory-cycle-count/cycleCounts/count - get inventory cycle count import count
          -->
         <resource name="count">
-            <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImport" operation="count"/></method>
+            <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportView" operation="count"/></method>
         </resource>
         <resource name="stats">
             <method type="post"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImportDetails"/></method>
