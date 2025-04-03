@@ -24,6 +24,10 @@
             <parameter name="statusId"/>
             <parameter name="facilityId" type="List"/>
             <parameter name="computeQOH" default-value="Y"/>
+            <parameter name="createdDate_from" type="Timestamp"/>
+            <parameter name="createdDate_thru" type="Timestamp"/>
+            <parameter name="closedDate_from" type="Timestamp"/>
+            <parameter name="closedDate_thru" type="Timestamp"/>
             <parameter name="orderBy" default-value="-inventoryCountImportId, importItemSeqId"/>
             <parameter name="pageIndex" type="Integer" default-value="0">
                 <description>The current page index to get the inventory count import items.</description>
