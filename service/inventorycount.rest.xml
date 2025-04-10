@@ -43,10 +43,12 @@
         </id>
     </resource>
     <resource name="notificationTopics">
+        <method type="get"><entity name="moqui.security.user.NotificationTopic" operation="list"/></method>
         <method type="post"><entity name="moqui.security.user.NotificationTopic" operation="create"/></method>
         <id name="topic">
             <method type="delete"><entity name="moqui.security.user.NotificationTopic" operation="delete"/></method>
             <resource name="users">
+                <method type="get"><entity name="moqui.security.user.NotificationTopicUser" operation="list"/></method>
                 <method type="post"><entity name="moqui.security.user.NotificationTopicUser" operation="create"/></method>
                 <id name="userId">
                     <method type="delete"><entity name="moqui.security.user.NotificationTopicUser" operation="delete"/></method>
