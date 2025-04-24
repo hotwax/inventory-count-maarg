@@ -493,18 +493,18 @@
                               out-map="result"
                 />
                 <set field="inventoryCountImportId" from="result.inventoryCountImportId"/>
-                <else>
-                    <set field="inventoryCountImportId" from="inventoryCount.inventoryCountImportId"/>
-                    <entity-find entity-name="InventoryCountImportItem"
-                                 list="inventoryCountItems">
-                        <econdition field-name="inventoryCountImportId" from="inventoryCountImportId"/>
-                        <econdition field-name="productId" from="productId"/>
-                    </entity-find>
-                    <if condition="inventoryCountItems">
-                        <set field="inventoryCountImportItem" from="inventoryCountItems?.first"/>
-                        <return/>
-                    </if>
-                </else>
+            <else>
+                <set field="inventoryCountImportId" from="inventoryCount.inventoryCountImportId"/>
+                <entity-find entity-name="InventoryCountImportItem"
+                             list="inventoryCountItems">
+                    <econdition field-name="inventoryCountImportId" from="inventoryCountImportId"/>
+                    <econdition field-name="productId" from="productId"/>
+                </entity-find>
+                <if condition="inventoryCountItems">
+                    <set field="inventoryCountImportItem" from="inventoryCountItems?.first"/>
+                    <return/>
+                </if>
+            </else>
             </if>
             <service-call name="create#co.hotwax.warehouse.InventoryCountImportItem"
                           in-map="[inventoryCountImportId : inventoryCountImportId,
