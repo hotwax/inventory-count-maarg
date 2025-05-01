@@ -13,4 +13,7 @@
         <authz artifactAuthzId="ICC_API_ADMIN" userGroupId="ADMIN" authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
     </artifactGroups>
 
+    <moqui.basic.EnumerationType enumTypeId="CYCLE_COUNT" description="cycle count"/>
+    <moqui.basic.Enumeration enumId="REJ_ITEM_COUNT" description="rejected item cycle count" enumTypeId="CYCLE_COUNT"/>
+
 </entity-facade-xml>
