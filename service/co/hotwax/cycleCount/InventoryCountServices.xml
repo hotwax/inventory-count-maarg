@@ -581,8 +581,9 @@
                                       in-map="inventoryCountImportId:inventoryCountItem.inventoryCountImportId,
                                       importItemSeqId:inventoryCountItem.importItemSeqId,
                                       quantity:importItemSeqId.quantity,
-                                      systemQOH:qtyOnHand, varianceQty:varianceQty
-                                      reason:'CYCLE_COUNT'
+                                      systemQOH:qtyOnHand,
+                                      varianceQty:varianceQty,
+                                      reason:'CYCLE_COUNT',
                                       comments:'Auto accepted cycle count'"/>
                     </if>
                 </iterate>
