@@ -563,7 +563,7 @@
                 <econdition field-name="productStoreId" from="productStoreId" ignore-if-empty="true"/>
             </entity-find>
             <iterate list="inventoryCounts" entry="inventoryCount">
-                <entity-find entity-name="inventoryCountImportItem" list="inventoryCountItems">
+                <entity-find entity-name="InventoryCountImportItem" list="inventoryCountItems">
                     <econdition field-name="inventoryCountImportId" from="inventoryCount.inventoryCountImportId"/>
                 </entity-find>
                 <iterate list="inventoryCountItems" entry="inventoryCountItem">
@@ -574,17 +574,23 @@
                     <if condition="itemQOH">
                         <set field="qtyOnHand" from="itemQOH?.first?.qoh"/>
                     </if>
-                    <set field="difference" from="(((qtyOnHand-inventoryCountItem.quantity)/qtyOnHand).abs())*100"/>
+                    <if condition="qtyOnHand='0' &amp;&amp; importItemSeqId.quantity != 0">
+                        <return/>
+                    </if>
+                    <set field="difference" value="0"/>
+                    <if condition="qtyOnHand!='0'">
+                        <set field="difference" from="(((qtyOnHand-inventoryCountItem.quantity)/qtyOnHand).abs())*100"/>
+                    </if>
                     <if condition="acceptLimit >= difference">
                         <set field="varianceQty" from="itemQOH-inventoryCountItem.quantity"/>
                         <service-call name="co.hotwax.cycleCount.InventoryCountServices.accept#InventoryCountImportItem"
-                                      in-map="inventoryCountImportId:inventoryCountItem.inventoryCountImportId,
-                                      importItemSeqId:inventoryCountItem.importItemSeqId,
-                                      quantity:importItemSeqId.quantity,
-                                      systemQOH:qtyOnHand,
-                                      varianceQty:varianceQty,
-                                      reason:'CYCLE_COUNT',
-                                      comments:'Auto accepted cycle count'"/>
+                            in-map="inventoryCountImportId:inventoryCountItem.inventoryCountImportId,
+                            importItemSeqId:inventoryCountItem.importItemSeqId,
+                            quantity:importItemSeqId.quantity,
+                            systemQOH:qtyOnHand,
+                            varianceQty:varianceQty,
+                            reason:'CYCLE_COUNT',
+                            comments:'Auto accepted cycle count'"/>
                     </if>
                 </iterate>
             </iterate>
