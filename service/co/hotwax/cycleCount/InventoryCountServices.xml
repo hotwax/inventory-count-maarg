@@ -565,7 +565,7 @@
             <iterate list="inventoryCounts" entry="inventoryCount">
                 <entity-find entity-name="InventoryCountImportItem" list="inventoryCountItems">
                     <econdition field-name="inventoryCountImportId" from="inventoryCount.inventoryCountImportId"/>
-                    <econdition field-name="inventoryCountImportId" value="INV_COUNT_CREATED"/>
+                    <econdition field-name="statusId" value="INV_COUNT_CREATED"/>
                 </entity-find>
                 <set field="numberOfItems" from="inventoryCountItems.size()"/>
                 <iterate list="inventoryCountItems" entry="inventoryCountItem">
@@ -596,7 +596,7 @@
                             systemQOH:qtyOnHand,
                             varianceQty:varianceQty,
                             reason:'CYCLE_COUNT',
-                            comments:'Auto accepted cycle count'"/>
+                            comments:'Auto accepted cycle count'" out-map="result"/>
                     </if>
                 </iterate>
                 <if condition="numberOfItems == 0">
