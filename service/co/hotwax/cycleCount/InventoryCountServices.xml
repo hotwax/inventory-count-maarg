@@ -574,7 +574,7 @@
                     <if condition="itemQOH">
                         <set field="qtyOnHand" from="itemQOH?.first?.qoh"/>
                     </if>
-                    <if condition="qtyOnHand='0' &amp;&amp; importItemSeqId.quantity != 0">
+                    <if condition="qtyOnHand='0' &amp;&amp; inventoryCountItem.quantity != 0">
                         <return/>
                     </if>
                     <set field="difference" value="0"/>
