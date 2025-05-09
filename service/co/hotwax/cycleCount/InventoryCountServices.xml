@@ -565,16 +565,21 @@
             <iterate list="inventoryCounts" entry="inventoryCount">
                 <entity-find entity-name="InventoryCountImportItem" list="inventoryCountItems">
                     <econdition field-name="inventoryCountImportId" from="inventoryCount.inventoryCountImportId"/>
+                    <econdition field-name="inventoryCountImportId" value="INV_COUNT_CREATED"/>
                 </entity-find>
+                <set field="numberOfItems" from="inventoryCountItems.size()"/>
                 <iterate list="inventoryCountItems" entry="inventoryCountItem">
                     <entity-find entity-name="co.hotwax.warehouse.InventoryItemSum" list="itemQOH">
-                        <econdition field-name="productId" from="inventoryCount.facilityId"/>
-                        <econdition field-name="facilityId" from="inventoryCountItem.productId"/>
+                        <econdition field-name="productId" from="inventoryCountItem.productId"/>
+                        <econdition field-name="facilityId" from="inventoryCount.facilityId"/>
                     </entity-find>
                     <if condition="itemQOH">
                         <set field="qtyOnHand" from="itemQOH?.first?.qoh"/>
                     </if>
-                    <if condition="qtyOnHand='0' &amp;&amp; inventoryCountItem.quantity != 0">
+                    <if condition="qtyOnHand == null">
+                        <continue/>
+                    </if>
+                    <if condition="qtyOnHand=='0' &amp;&amp; inventoryCountItem.quantity != 0">
                         <return/>
                     </if>
                     <set field="difference" value="0"/>
@@ -582,7 +587,8 @@
                         <set field="difference" from="(((qtyOnHand-inventoryCountItem.quantity)/qtyOnHand).abs())*100"/>
                     </if>
                     <if condition="acceptLimit >= difference">
-                        <set field="varianceQty" from="itemQOH-inventoryCountItem.quantity"/>
+                        <set field="numberOfItems" from="numberOfItems-1"/>
+                        <set field="varianceQty" from="qtyOnHand-inventoryCountItem.quantity"/>
                         <service-call name="co.hotwax.cycleCount.InventoryCountServices.accept#InventoryCountImportItem"
                             in-map="inventoryCountImportId:inventoryCountItem.inventoryCountImportId,
                             importItemSeqId:inventoryCountItem.importItemSeqId,
@@ -593,6 +599,12 @@
                             comments:'Auto accepted cycle count'"/>
                     </if>
                 </iterate>
+                <if condition="numberOfItems == 0">
+                    <set field="inventoryCount.statusId" value="INV_COUNT_COMPLETED"/>
+                    <service-call name="update#co.hotwax.warehouse.InventoryCountImport"
+                                  in-map="inventoryCountImportId:inventoryCount.inventoryCountImportId,
+                              statusId:inventoryCount.statusId"/>
+                </if>
             </iterate>
         </actions>
     </service>
