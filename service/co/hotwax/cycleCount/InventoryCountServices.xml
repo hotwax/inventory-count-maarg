@@ -552,9 +552,8 @@
 
     <service verb="bulkAccept" noun="InventoryCountImport">
         <in-parameters>
-            <parameter name="acceptLimit" required="true" type="Double">
-                <number-range max="100" min="0" message="Value should be between 0 and 100"/>
-            </parameter>
+            <parameter name="acceptLimit" required="true" type="Double"/>
+            <parameter name="isPercent" type="Boolean"/>
             <parameter name="productStoreId" required="false"/>
         </in-parameters>
         <actions>
@@ -584,7 +583,12 @@
                     </if>
                     <set field="difference" value="0"/>
                     <if condition="qtyOnHand!='0'">
-                        <set field="difference" from="(((qtyOnHand-inventoryCountItem.quantity)/qtyOnHand).abs())*100"/>
+                        <if condition="isPercent==true">
+                            <set field="difference" from="(((qtyOnHand-inventoryCountItem.quantity)/qtyOnHand).abs())*100"/>
+                            <else>
+                                <set field="difference" from="(qtyOnHand-inventoryCountItem.quantity).abs()"/>
+                            </else>
+                        </if>
                     </if>
                     <if condition="acceptLimit >= difference">
                         <set field="numberOfItems" from="numberOfItems-1"/>
