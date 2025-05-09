@@ -586,7 +586,7 @@
                         <service-call name="co.hotwax.cycleCount.InventoryCountServices.accept#InventoryCountImportItem"
                             in-map="inventoryCountImportId:inventoryCountItem.inventoryCountImportId,
                             importItemSeqId:inventoryCountItem.importItemSeqId,
-                            quantity:importItemSeqId.quantity,
+                            quantity:inventoryCountItem.quantity,
                             systemQOH:qtyOnHand,
                             varianceQty:varianceQty,
                             reason:'CYCLE_COUNT',
