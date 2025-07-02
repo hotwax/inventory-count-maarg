@@ -87,6 +87,7 @@
                     ** DELETE /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items/{importItemSeqId} - delete inventory cycle count item
                 -->
                 <id name="importItemSeqId">
+                    <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="one"/></method>
                     <method type="put"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="update"/></method>
                     <method type="delete"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="delete"/></method>
 
