@@ -82,6 +82,9 @@
             -->
             <resource name="items">
                 <method type="get"><service name="co.hotwax.cycleCount.InventoryCountServices.get#InventoryCountImportItemDetails"/></method>
+                <resource name="summary">
+                    <method type="get"><entity name="co.hotwax.warehouse.InventoryCountImportItem" operation="list"/></method>
+                </resource>
                 <!-- Inventory Cycle Count API:
                     ** PUT /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items/{importItemSeqId} - update inventory cycle count item
                     ** DELETE /inventory-cycle-count/cycleCounts/{inventoryCountImportId}/items/{importItemSeqId} - delete inventory cycle count item
