@@ -257,21 +257,9 @@
             <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImportItemView" value-field="invCountImpItem"/>
 
             <set field="userName" from="ec.user.username" default-value="${System.getProperty('default.oms.user')}"/>
-            <script>
-                omsBaseUrl = co.hotwax.util.MaargUtil.getOmsInstanceUrl(ec.ecfi);
-                token = co.hotwax.util.MaargUtil.getOmsJwtToken(ec.ecfi, userName);
-            </script>
-            <if condition="!token">
-                <return error="true" message="Unable to generate oms token, check JWT configuration"/>
-            </if>
-            <if condition="!omsBaseUrl">
-                <return error="true" message="OMS base url not found"/>
-            </if>
 
             <!-- First record the record cycle count. -->
             <set field="inMap" from="[:]"/>
-            <set field="inMap.token" from="token"/>
-            <set field="inMap.omsBaseUrl" from="omsBaseUrl"/>
             <set field="inMap.productId" from="invCountImpItem.productId"/>
             <set field="inMap.facilityId" from="invCountImpItem.facilityId"/>
             <set field="inMap.quantity" from="context.quantity"/>
@@ -294,7 +282,7 @@
             <return type="info" message="Inventory Count Import Item Accepted."/>
         </actions>
     </service>
-    <service verb="run" noun="RecordCycleCount" type="remote-rest" location="${omsBaseUrl}/api/service/recordInventoryCount?token=${token}" method="post">
+    <service verb="run" noun="RecordCycleCount" type="oms-rest" location="service/recordInventoryCount" method="post">
         <in-parameters>
             <parameter name="productId"/>
             <parameter name="facilityId"/>
