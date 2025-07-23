@@ -19,13 +19,15 @@
         <fields fieldSeqId="01" fieldPath="inventoryCountImportId"/>
         <fields fieldSeqId="02" fieldPath="importItemSeqId"/>
         <fields fieldSeqId="03" fieldPath="quantity"/>
+        <fields fieldSeqId="04" fieldPath="co.hotwax.warehouse.InventoryCountImport:statusId" fieldNameAlias="countStatusId"/>
+        <conditions conditionSeqId="01" fieldNameAlias="countStatusId" operator="equals" fieldValue="INV_COUNT_ASSIGNED"/>
     </dataDocuments>
     <moqui.entity.feed.DataFeed dataFeedId="InventoryCountUpdate" dataFeedTypeEnumId="DTFDTP_RT_PUSH" indexOnStartEmpty="Y"
-                                feedName="Inventory Count Update" feedReceiveServiceName="co.hotwax.cycleCount.InventoryCountServices.send#InventoryCountNotification">
+                                feedName="Inventory Count Update" feedReceiveServiceName="co.hotwax.cycleCount.InventoryCountNotificationServices.send#InventoryCountNotification">
         <documents dataDocumentId="InventoryCountImport"/>
     </moqui.entity.feed.DataFeed>
     <moqui.entity.feed.DataFeed dataFeedId="InventoryCountItemUpdate" dataFeedTypeEnumId="DTFDTP_RT_PUSH" indexOnStartEmpty="Y"
-                                feedName="Inventory Count Item Update" feedReceiveServiceName="co.hotwax.cycleCount.InventoryCountServices.send#InventoryCountNotification">
+                                feedName="Inventory Count Item Update" feedReceiveServiceName="co.hotwax.cycleCount.InventoryCountNotificationServices.send#InventoryCountNotification">
         <documents dataDocumentId="InventoryCountImportItem"/>
     </moqui.entity.feed.DataFeed>
 

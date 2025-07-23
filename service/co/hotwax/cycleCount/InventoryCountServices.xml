@@ -456,30 +456,6 @@
             <set field="csvData" from="ec.resource.getLocationReference(systemMessage.messageText).getText()"/>
         </actions>
     </service>
-
-    <service verb="send" noun="InventoryCountNotification" authenticate="anonymous-all">
-        <description>Send Inventory Count Notification</description>
-        <implements service="org.moqui.EntityServices.receive#DataFeed"/>
-        <actions>
-            <set field="updatedData" from="documentList[0]"/>
-            <if condition="!updatedData.facilityId">
-                <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImport" value-field="inventoryCountImport" cache="true">
-                    <field-map field-name="inventoryCountImportId" from="updatedData.inventoryCountImportId"/>
-                </entity-find-one>
-                <if condition="inventoryCountImport">
-                    <set field="updatedData.facilityId" from="inventoryCountImport.facilityId"/>
-                </if>
-            </if>
-
-            <if condition="updatedData.facilityId">
-                <script>
-                    ec.makeNotificationMessage().topic(updatedData.facilityId).type("info").title("Inventory Count Update")
-                    .message(updatedData).send()
-                </script>
-            </if>
-        </actions>
-    </service>
-
     <service verb="findOrCreate" noun="RejectedItemCycleCount">
         <in-parameters>
             <parameter name="productId" required="true"/>

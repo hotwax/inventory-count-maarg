@@ -18,4 +18,10 @@
             <service-call name="create#co.hotwax.warehouse.InvCountImportStatus" in-map="context + [statusDate: ec.user.nowTimestamp]"/>
         </actions>
     </seca>
+
+    <seca id="DeleteInventoryCountImportItem" service="delete#co.hotwax.warehouse.InventoryCountImportItem" when="tx-commit">
+        <actions>
+            <service-call name="co.hotwax.cycleCount.InventoryCountServices.send#InventoryCountItemDeleteNotification" in-map="context" ignore-error="true"/>
+        </actions>
+    </seca>
 </secas>
