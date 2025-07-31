@@ -40,6 +40,7 @@
                 <econdition field-name="importItemSeqId" ignore-if-empty="true"/>
                 <econdition field-name="statusId" ignore-if-empty="true"/>
                 <econdition field-name="facilityId" operator="in" from="facilityId" ignore-if-empty="true"/>
+                <econdition field-name="itemStatusId" operator="not-equals" value="INV_COUNT_VOIDED"/>
             </entity-find>
             <set field="itemList" from="[]"/>
             <iterate list="invCountImpItemItr" entry="invCountImpItem">
