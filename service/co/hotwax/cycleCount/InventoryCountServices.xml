@@ -228,6 +228,7 @@
             <script>context.putAll(countImport)</script>
             <entity-find entity-name="co.hotwax.warehouse.InventoryCountImportItem" list="itemList">
                 <econdition field-name="inventoryCountImportId"/>
+                <econdition field-name="statusId" operator="not-equals" value="INV_COUNT_VOIDED"/>
             </entity-find>
             <set field="context.totalItems" from="(itemList?.size() ?:0)"/>
             <set field="context.itemCounted" from="(itemList?.findAll{it.quantity != null &amp;&amp; it.quantity > 0}?.size() ?:0)"/>
