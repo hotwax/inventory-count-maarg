@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+    <service verb="send" noun="InventoryCountNotification" authenticate="anonymous-all">
+        <description>Send Inventory Count Notification</description>
+        <implements service="org.moqui.EntityServices.receive#DataFeed"/>
+        <actions>
+            <set field="updatedData" from="documentList[0]"/>
+            <if condition="!updatedData.facilityId">
+                <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImport" value-field="inventoryCountImport" cache="true">
+                    <field-map field-name="inventoryCountImportId" from="updatedData.inventoryCountImportId"/>
+                </entity-find-one>
+                <if condition="inventoryCountImport">
+                    <set field="updatedData.facilityId" from="inventoryCountImport.facilityId"/>
+                </if>
+            </if>
+
+            <if condition="updatedData.facilityId">
+                <script>
+                    ec.makeNotificationMessage().topic(updatedData.facilityId).type("info").title("Inventory Count Update")
+                    .message(updatedData).send()
+                </script>
+            </if>
+        </actions>
+    </service>
+    <service verb="send" noun="InventoryCountItemDeleteNotification" authenticate="anonymous-all">
+        <description>Send Inventory Count Item Delete Notification</description>
+        <in-parameters>
+            <auto-parameters entity-name="co.hotwax.warehouse.InventoryCountImportItem"/>
+        </in-parameters>
+        <actions>
+            <entity-find-one entity-name="co.hotwax.warehouse.InventoryCountImport" value-field="inventoryCountImport"/>
+            <if condition="inventoryCountImport &amp;&amp; inventoryCountImport.facilityId">
+                <script>
+                    ec.makeNotificationMessage().topic(inventoryCountImport.facilityId).type("info").title("Inventory Count Item Delete")
+                            .message([inventoryCountImportId: context.inventoryCountImportId, importItemSeqId: context.importItemSeqId, isDeleted: true]).send()
+                </script>
+            </if>
+        </actions>
+    </service>
+</services>

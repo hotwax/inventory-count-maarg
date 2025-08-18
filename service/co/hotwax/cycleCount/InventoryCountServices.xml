@@ -458,7 +458,6 @@
             <set field="csvData" from="ec.resource.getLocationReference(systemMessage.messageText).getText()"/>
         </actions>
     </service>
-    
     <service verb="findOrCreate" noun="RejectedItemCycleCount">
         <in-parameters>
             <parameter name="productId" required="true"/>
@@ -539,5 +538,4 @@
             </iterate>
         </actions>
     </service>
-
 </services>
